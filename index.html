@@ -74,6 +74,10 @@ table{width:100%;border-collapse:collapse;font-size:.82rem}
 th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);
   font-variant-numeric:tabular-nums}
 th{color:var(--dim);font-weight:600;font-size:.74rem}
+.del{background:none;border:0;color:var(--dim);font-size:.95rem;line-height:1;
+  padding:3px 7px;border-radius:6px;cursor:pointer}
+.del:hover{background:color-mix(in srgb,var(--b3) 18%,transparent);color:var(--b3)}
+td:last-child{text-align:right;width:1%;white-space:nowrap}
 .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(90px);
   background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:11px 18px;
   font-size:.86rem;opacity:0;transition:.25s;pointer-events:none;max-width:90vw}
@@ -175,8 +179,9 @@ footer{border-top:1px solid var(--line);margin-top:28px;padding-top:18px}
     <button class="ghost" id="expBtn">CSV 내보내기</button>
   </div>
   <p id="logStat" class="note" style="margin:0 0 10px"></p>
-  <table><thead><tr><th>회차</th><th>번호</th><th>일치</th></tr></thead>
+  <table><thead><tr><th>회차</th><th>번호</th><th>일치</th><th></th></tr></thead>
     <tbody id="logBody"></tbody></table>
+  <div style="margin-top:10px"><button class="ghost" id="clearBtn">기록 전체 삭제</button></div>
   <p class="note" style="margin-top:10px">예측을 <strong>먼저</strong> 기록하고 추첨 후에 채점합니다.
   잘 맞은 것만 골라 보는 사후 편향을 막기 위한 장치입니다.</p>
 </div>
@@ -934,10 +939,9 @@ function exportCsv() {
   if (!STATE.history) return;
   const last = STATE.meta[STATE.meta.length - 1].round;
   const csv = buildCsv(STATE.history, STATE.meta);
-  /* 파일명을 회차와 무관하게 고정한다 — data/latest.csv 에 그대로 덮어쓰기 위함 */
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' }));
-  a.download = 'latest.csv'; a.click(); URL.revokeObjectURL(a.href);
+  a.download = 'latest.csv'; a.click(); URL.revokeObjectURL(a.href);   // 이름 고정
   STATE.dirty = false; $('#csvBtn').disabled = true;
   toast(`latest.csv 내려받기 (${last}회차까지)`);
 }
@@ -1099,13 +1103,39 @@ function gradeLog() {
   toast(`${gradeRound(target, nums)}건 채점 완료`);
 }
 
+/* 기록 1건 삭제 — 표에 보이는 순서가 아니라 원본 배열 인덱스로 지운다 */
+function deleteLogEntry(idx) {
+  const log = readLog();
+  if (idx < 0 || idx >= log.length) return;
+  const r = log[idx];
+  if (!confirm(`${r.round}회차  ${r.numbers}\n이 기록을 삭제할까요?`)) return;
+  log.splice(idx, 1);
+  writeLog(log); renderLog();
+  toast('기록 1건 삭제');
+}
+
+/* 전체 삭제 — 되돌릴 수 없으므로 두 번 확인한다 */
+function clearLog() {
+  const n = readLog().length;
+  if (!n) return toast('삭제할 기록이 없습니다', true);
+  if (!confirm(`기록 ${n}세트를 모두 삭제합니다.\n되돌릴 수 없습니다. 계속할까요?`)) return;
+  writeLog([]); renderLog();
+  toast(`기록 ${n}세트 삭제`);
+}
+
 function renderLog() {
   const log = readLog(), box = $('#logBody'); box.innerHTML = '';
   const graded = log.filter(r => r.matched !== null);
-  log.slice().reverse().slice(0, 40).forEach(r => {
+  /* 원본 인덱스를 들고 다녀야 최신순으로 뒤집어 보여줘도 올바른 항목이 지워진다 */
+  log.map((r, i) => ({ r, i })).reverse().slice(0, 40).forEach(({ r, i }) => {
     const tr = el('tr');
     [r.round, r.numbers, r.matched === null ? '—' : r.matched + '개'].forEach(v =>
       tr.append(el('td', null, String(v))));
+    const td = el('td');
+    const b = el('button', 'del', '✕');
+    b.title = '이 기록 삭제';
+    b.addEventListener('click', () => deleteLogEntry(i));
+    td.append(b); tr.append(td);
     box.append(tr);
   });
   const avg = graded.length ? npMean(graded.map(r => r.matched)) : null;
@@ -1141,6 +1171,7 @@ window.addEventListener('DOMContentLoaded', () => {
   $('#expBtn').addEventListener('click', exportLog);
   $('#addBtn').addEventListener('click', addRound);
   $('#csvBtn').addEventListener('click', exportCsv);
+  $('#clearBtn').addEventListener('click', clearLog);
   $('#copyBtn').addEventListener('click', () => {
     $('#copyBox').select(); document.execCommand('copy'); toast('복사했습니다');
   });
