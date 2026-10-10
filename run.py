@@ -12,14 +12,14 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), 'eng
 from bootstrap import load_engine, data            # noqa: E402
 
 ap = argparse.ArgumentParser()
-ap.add_argument('--csv', default=None, help='당첨번호 CSV (기본 data/new_1245.csv)')
+ap.add_argument('--csv', default=None, help='당첨번호 CSV (기본 data/latest.csv)')
 ap.add_argument('--count', type=int, default=5, help='생성할 세트 수')
 ap.add_argument('--pct', default='10', help='인기도 상위 차단 기준 %% (off 면 감점만)')
 ap.add_argument('--seed', type=int, default=None, help='재현용 시드 (생략 시 매번 다름)')
 a = ap.parse_args()
 
 v12, p13 = load_engine()
-path = a.csv or data('new_1245.csv')
+path = a.csv or data('latest.csv')
 hist = v12.safe_load_history(path, verbose=True)
 print(f'  유효 회차 {len(hist)}회 | 마지막 당첨 {hist[-1]}\n')
 

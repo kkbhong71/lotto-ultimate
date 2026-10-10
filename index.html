@@ -121,7 +121,7 @@ footer{border-top:1px solid var(--line);margin-top:28px;padding-top:18px}
   </div>
   <p class="note" style="margin:11px 0 0">회차와 추첨일은 자동으로 채워집니다. 번호만 붙여넣고
   <strong>추가</strong>를 누르면 전체 분석이 갱신되고, 해당 회차로 기록해 둔 예측이 있으면
-  <strong>자동 채점</strong>됩니다. <strong>CSV 내려받기</strong>로 갱신된 파일을 보관하세요.</p>
+  <strong>자동 채점</strong>됩니다. <strong>CSV 내려받기</strong>로 받은 <code>latest.csv</code>를 저장소 <code>data/</code>에 덮어 커밋하면, 다음 접속부터 자동으로 최신 데이터가 올라옵니다.</p>
 </div>
 
 <div class="card">
@@ -866,7 +866,9 @@ function validateDraw(nums, round, history, meta) {
 /* ── UI 바인딩 ──────────────────────────────────────────────────── */
 let STATE = { history: null, meta: null, eng: null, clu: null, gate: null,
                dropped: 0, last: null, dirty: false };
-const DEFAULT_CSV = 'data/new_1245.csv';   // 저장소 동봉 스냅샷
+/* 회차가 바뀌어도 이름이 그대로여야 자동 로드가 계속 동작한다.
+   갱신된 CSV를 이 이름으로 덮어 커밋하면 다음 접속부터 바로 반영된다. */
+const DEFAULT_CSV = 'data/latest.csv';
 const $ = (s) => document.querySelector(s);
 const el = (t, c, x) => { const n = document.createElement(t); if (c) n.className = c;
   if (x !== undefined) n.textContent = x; return n; };
@@ -932,11 +934,12 @@ function exportCsv() {
   if (!STATE.history) return;
   const last = STATE.meta[STATE.meta.length - 1].round;
   const csv = buildCsv(STATE.history, STATE.meta);
+  /* 파일명을 회차와 무관하게 고정한다 — data/latest.csv 에 그대로 덮어쓰기 위함 */
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' }));
-  a.download = `new_${last}.csv`; a.click(); URL.revokeObjectURL(a.href);
+  a.download = 'latest.csv'; a.click(); URL.revokeObjectURL(a.href);
   STATE.dirty = false; $('#csvBtn').disabled = true;
-  toast(`new_${last}.csv 내려받기`);
+  toast(`latest.csv 내려받기 (${last}회차까지)`);
 }
 
 function renderAudit() {

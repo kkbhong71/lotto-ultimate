@@ -68,7 +68,7 @@ Holm-Bonferroni 보정 후 **유의한 항목 0개**. 자세한 내용은
 
 ### 웹앱 (설치 불필요)
 
-https://kkbhong71.github.io/lotto-ultimate/ 에 접속하면 `data/new_1245.csv`를 자동으로
+https://kkbhong71.github.io/lotto-ultimate/ 에 접속하면 `data/latest.csv`를 자동으로
 불러와 바로 사용할 수 있습니다. 더 최신 파일이 있으면 끌어다 놓아 교체하면 됩니다.
 
 `index.html`을 받아 더블클릭해도 동작합니다(이 경우 브라우저 정책상 자동 로드가
@@ -84,10 +84,18 @@ CSV를 손으로 편집할 필요가 없습니다.
 | **토요일 추첨 전** | 번호 생성 → 대상 회차 확인 후 **예측 기록** |
 | **추첨 후** | `1-B 새 회차 추가`에 당첨번호 6개만 붙여넣고 **추가** |
 | | → 분석 갱신 · 예측 **자동 채점** · 다음 회차 자동 입력 준비 |
-| **보관** | **CSV 내려받기** → `data/`에 커밋 (원할 때만) |
+| **보관** | **CSV 내려받기** → `data/latest.csv`에 덮어 커밋 |
 
 회차 번호와 추첨일은 자동으로 채워지고, 입력은 추가 전에 검증됩니다 —
 1~45 범위, 중복 번호, 6개 미만, 회차 건너뜀, 과거와 동일한 조합을 모두 걸러냅니다.
+
+내려받는 파일 이름은 회차와 무관하게 항상 `latest.csv`입니다. `data/latest.csv`에
+그대로 덮어 커밋하면 다음 접속부터 자동 로드에 반영되므로, 파일을 따로 챙길 일이
+없습니다. 과거 회차 데이터는 git 이력에 남습니다.
+
+> 추가한 회차는 브라우저 메모리에만 있습니다. 커밋하거나 CSV를 내려받지 않고
+> 새로고침하면 사라집니다. 예측 기록도 그 브라우저의 localStorage에만 저장되므로,
+> 기기를 옮기기 전에 `CSV 내보내기`로 백업하세요.
 
 ### Python (Colab / 로컬)
 
@@ -105,7 +113,7 @@ import sys; sys.path.insert(0, 'engine')
 from bootstrap import load_engine, data
 
 v12, p13 = load_engine()
-hist = v12.safe_load_history(data('new_1245.csv'))
+hist = v12.safe_load_history(data('latest.csv'))
 
 out = p13.predict_v131(hist, count=5, pop_max_pct=10.0)
 for s in out['sets']:
@@ -127,7 +135,7 @@ engine/
   lotto_integrated_v1_2.py              기반 엔진 (분석·필터·백테스트)
   lotto_v13_patch.py                    v1.3.3 패치 (RNG·인기도·버그 수정)
 data/
-  new_1245.csv                          당첨번호 1~1245회차
+  latest.csv                            당첨번호 (최신본 — 이 이름 고정)
   popularity_model_dataset.csv          인기도 모형 적합용 981회차
   popularity_model_coefficients.json    적합된 계수
 verify/
