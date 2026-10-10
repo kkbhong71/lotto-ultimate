@@ -18,7 +18,7 @@ from bootstrap import load_engine, data            # noqa: E402
 
 TEST_N = 500
 v12, p13 = load_engine(patch_backtest=False)
-hist = v12.safe_load_history(data('new_1245.csv'), verbose=False)
+hist = v12.safe_load_history(data('latest.csv'), verbose=False)
 cfg = v12.Config()
 comps = ['frequency','recency','gap','pair','momentum','zone','markov','assoc','FINAL']
 ranks = {c: [] for c in comps}

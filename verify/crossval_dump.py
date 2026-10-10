@@ -13,7 +13,7 @@ sys.path.insert(0, os.path.join(HERE, '..', 'engine'))
 from bootstrap import load_engine, data            # noqa: E402
 
 v12, p13 = load_engine(patch_backtest=False)
-hist = v12.safe_load_history(data('new_1245.csv'), verbose=False)
+hist = v12.safe_load_history(data('latest.csv'), verbose=False)
 EngCls = p13.build_engine_class(v12.DataEngine)
 eng = EngCls.from_history(hist, v12.Config())
 vec = lambda a: [float(x) for x in np.asarray(a)[:46]]
