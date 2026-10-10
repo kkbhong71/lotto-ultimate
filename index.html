@@ -1,0 +1,1177 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LOTTO ULTIMATE</title>
+<style>
+:root{
+  --bg:#0e1116; --panel:#161b23; --panel2:#1c222c; --line:#2a323f;
+  --fg:#e6edf5; --dim:#8b97a8; --accent:#5aa9ff; --good:#3fbf7f; --warn:#e8b23a;
+  --b1:#f5c33b; --b2:#4aa3f0; --b3:#e8614d; --b4:#8d96a5; --b5:#4fbd85;
+}
+@media (prefers-color-scheme:light){
+  :root:not([data-theme="dark"]){
+    --bg:#f6f8fb; --panel:#ffffff; --panel2:#f0f3f8; --line:#dde3ec;
+    --fg:#141a22; --dim:#5d6b7d; --accent:#1769c9;
+  }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);
+  font-family:system-ui,-apple-system,"Segoe UI","Noto Sans KR",sans-serif;
+  line-height:1.6;-webkit-text-size-adjust:100%}
+.wrap{max-width:860px;margin:0 auto;padding:28px 16px 64px}
+header{margin-bottom:22px}
+h1{font-size:1.5rem;margin:0 0 4px;letter-spacing:-.02em}
+.sub{color:var(--dim);font-size:.86rem;margin:0}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;
+  padding:18px;margin-bottom:16px}
+.card h2{font-size:.82rem;text-transform:uppercase;letter-spacing:.08em;
+  color:var(--dim);margin:0 0 14px;font-weight:600}
+#drop{border:1.5px dashed var(--line);border-radius:12px;padding:30px 16px;text-align:center;
+  cursor:pointer;transition:.15s;background:var(--panel2)}
+#drop:hover,#drop.over{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 8%,var(--panel2))}
+#drop strong{display:block;font-size:.95rem}
+#drop span{color:var(--dim);font-size:.8rem}
+.kv{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--line);font-size:.88rem}
+.kv:last-child{border:0}
+.k{color:var(--dim)} .v{font-variant-numeric:tabular-nums;font-weight:600}
+.controls{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+label{display:block;font-size:.76rem;color:var(--dim);margin-bottom:5px}
+select,input[type=number],input[type=text]{background:var(--panel2);color:var(--fg);
+  border:1px solid var(--line);border-radius:9px;padding:9px 11px;font-size:.9rem;
+  font-family:inherit;min-width:0}
+button{background:var(--accent);color:#fff;border:0;border-radius:9px;padding:10px 18px;
+  font-size:.9rem;font-weight:600;cursor:pointer;font-family:inherit}
+button:disabled{opacity:.5;cursor:default}
+button.ghost{background:var(--panel2);color:var(--fg);border:1px solid var(--line)}
+.set{background:var(--panel2);border:1px solid var(--line);border-radius:12px;
+  padding:13px 15px;margin-bottom:10px}
+.setHead{display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
+.idx{font-size:.7rem;letter-spacing:.1em;color:var(--dim);font-weight:700}
+.pill{font-size:.72rem;background:color-mix(in srgb,var(--good) 18%,transparent);
+  color:var(--good);padding:2px 9px;border-radius:999px;font-weight:600}
+.algo{font-size:.7rem;color:var(--dim);margin-left:auto}
+.balls{display:flex;gap:7px;flex-wrap:wrap}
+.ball{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;
+  font-weight:700;font-size:.92rem;color:#15202b;font-variant-numeric:tabular-nums}
+.b1{background:var(--b1)}.b2{background:var(--b2)}.b3{background:var(--b3)}
+.b4{background:var(--b4)}.b5{background:var(--b5)}
+.meta{color:var(--dim);font-size:.78rem;margin-top:9px;font-variant-numeric:tabular-nums}
+#summary{color:var(--dim);font-size:.8rem;margin:4px 0 14px;font-variant-numeric:tabular-nums}
+#board{display:grid;grid-template-columns:repeat(auto-fill,minmax(52px,1fr));gap:6px}
+.cell{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:6px 4px;text-align:center}
+.cell .num{display:block;font-size:.8rem;font-weight:600;font-variant-numeric:tabular-nums}
+.cell .bar{display:block;height:4px;margin-top:5px;border-radius:2px;
+  background:color-mix(in srgb,var(--accent) calc(var(--t)*100%),var(--line))}
+.chart{width:100%;height:auto}
+.bin{fill:var(--line)} .mark{stroke:var(--good);stroke-width:2}
+.axis{fill:var(--dim);font-size:11px}
+textarea{width:100%;background:var(--panel2);color:var(--fg);border:1px solid var(--line);
+  border-radius:9px;padding:11px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+  font-size:.86rem;resize:vertical}
+table{width:100%;border-collapse:collapse;font-size:.82rem}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);
+  font-variant-numeric:tabular-nums}
+th{color:var(--dim);font-weight:600;font-size:.74rem}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(90px);
+  background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:11px 18px;
+  font-size:.86rem;opacity:0;transition:.25s;pointer-events:none;max-width:90vw}
+.toast.show{opacity:1;transform:translateX(-50%)}
+.toast.bad{border-color:var(--b3);color:var(--b3)}
+.note{font-size:.78rem;color:var(--dim);line-height:1.65}
+.note strong{color:var(--fg)}
+footer{border-top:1px solid var(--line);margin-top:28px;padding-top:18px}
+@media (max-width:520px){.ball{width:33px;height:33px;font-size:.84rem}
+  .controls>*{flex:1 1 100%}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>LOTTO ULTIMATE</h1>
+  <p class="sub">인기 조합 회피 엔진 v1.3.3 · Oseong Vibe Coding EduHub</p>
+</header>
+
+<div class="card">
+  <h2>1 · 당첨번호 데이터</h2>
+  <div id="drop">
+    <strong>CSV 파일을 끌어다 놓거나 클릭</strong>
+    <span>동행복권 원본 / 표준 컬럼(num1~num6) / 추첨일 포함 형식 자동 인식<br>저장소 동봉 데이터는 자동으로 불러옵니다 — 더 최신 파일이 있을 때만 올리세요</span>
+  </div>
+  <input id="file" type="file" accept=".csv,text/csv" hidden>
+</div>
+
+<div class="card" id="auditCard" hidden>
+  <h2>데이터 감사</h2>
+  <div id="audit"></div>
+</div>
+
+<div class="card" id="addCard" hidden>
+  <h2>1-B · 새 회차 추가</h2>
+  <div class="controls">
+    <div style="flex:0 0 90px"><label for="newRound">회차</label>
+      <input id="newRound" type="number" style="width:100%"></div>
+    <div style="flex:0 0 130px"><label for="newDate">추첨일</label>
+      <input id="newDate" type="text" style="width:100%"></div>
+    <div style="flex:1 1 200px"><label for="newNums">당첨번호 6개</label>
+      <input id="newNums" type="text" placeholder="4, 5, 25, 28, 32, 42" style="width:100%"></div>
+    <button id="addBtn">추가</button>
+    <button class="ghost" id="csvBtn" disabled>CSV 내려받기</button>
+  </div>
+  <p class="note" style="margin:11px 0 0">회차와 추첨일은 자동으로 채워집니다. 번호만 붙여넣고
+  <strong>추가</strong>를 누르면 전체 분석이 갱신되고, 해당 회차로 기록해 둔 예측이 있으면
+  <strong>자동 채점</strong>됩니다. <strong>CSV 내려받기</strong>로 갱신된 파일을 보관하세요.</p>
+</div>
+
+<div class="card">
+  <h2>2 · 생성 설정</h2>
+  <div class="controls">
+    <div><label for="count">세트 수</label>
+      <input id="count" type="number" min="1" max="10" value="5"></div>
+    <div><label for="popPct">인기 조합 차단</label>
+      <select id="popPct">
+        <option value="25">상위 75% 차단 (하위 25%만)</option>
+        <option value="10" selected>상위 90% 차단 (하위 10%만)</option>
+        <option value="5">상위 95% 차단 (하위 5%만)</option>
+        <option value="off">차단 안 함 (감점만)</option>
+      </select></div>
+    <button id="genBtn" disabled>번호 생성</button>
+  </div>
+</div>
+
+<div class="card" id="resCard" hidden>
+  <h2>3 · 추천 조합</h2>
+  <p id="summary"></p>
+  <div id="results"></div>
+  <label for="copyBox" style="margin-top:12px">복사용</label>
+  <textarea id="copyBox" rows="5" readonly></textarea>
+  <div style="margin-top:9px"><button class="ghost" id="copyBtn">클립보드 복사</button></div>
+</div>
+
+<div class="card" id="popCard" hidden>
+  <h2>인기도 분포에서의 위치</h2>
+  <div id="popChart"></div>
+  <p class="note">회색은 무작위 4만 조합의 인기도 분포, 초록 선은 이번 추천 조합의 위치입니다.
+  왼쪽일수록 대중이 덜 고르는 조합이라 당첨 시 나눠 가질 사람이 적습니다.</p>
+</div>
+
+<div class="card" id="boardCard" hidden>
+  <h2>45볼 스코어보드</h2>
+  <div id="board"></div>
+</div>
+
+<div class="card">
+  <h2>4 · 예측 기록 · 사후 채점</h2>
+  <div class="controls" style="margin-bottom:12px">
+    <div><label for="target">대상 회차</label>
+      <input id="target" type="number" placeholder="1246"></div>
+    <button class="ghost" id="saveBtn">예측 기록</button>
+  </div>
+  <div class="controls" style="margin-bottom:12px">
+    <div style="flex:1"><label for="actual">실제 당첨번호 (쉼표 구분)</label>
+      <input id="actual" type="text" placeholder="4, 5, 25, 28, 32, 42" style="width:100%"></div>
+    <button class="ghost" id="gradeBtn">채점</button>
+    <button class="ghost" id="expBtn">CSV 내보내기</button>
+  </div>
+  <p id="logStat" class="note" style="margin:0 0 10px"></p>
+  <table><thead><tr><th>회차</th><th>번호</th><th>일치</th></tr></thead>
+    <tbody id="logBody"></tbody></table>
+  <p class="note" style="margin-top:10px">예측을 <strong>먼저</strong> 기록하고 추첨 후에 채점합니다.
+  잘 맞은 것만 골라 보는 사후 편향을 막기 위한 장치입니다.</p>
+</div>
+
+<footer>
+  <p class="note">
+  <strong>이 도구는 당첨 확률을 높이지 못합니다.</strong>
+  로또 1등 확률은 1/8,145,060이고 회차는 서로 독립이므로, 과거 데이터로 다음 번호를
+  예측하는 것은 수학적으로 불가능합니다. 실제로 이 프로젝트의 자체 검정에서
+  8종 통계 점수 전부 예측력이 확인되지 않았습니다(500회차 walk-forward, Holm-Bonferroni 보정).<br><br>
+  이 엔진이 하는 일은 하나뿐입니다 — <strong>대중이 덜 고르는 조합을 선택해, 당첨됐을 때
+  나눠 가질 사람 수를 줄이는 것</strong>입니다. 981회차(262~1245) 수동 1등 당첨자 2,878명으로
+  추정한 모형 기준이며, 확률이 아니라 기대 수령액에만 영향을 줍니다.<br><br>
+  복권은 여가로만 즐기고, 감당할 수 있는 범위를 넘지 마세요.
+  도박 문제로 어려움을 겪고 있다면 <strong>도박문제상담 1336</strong> (한국도박문제예방치유원)으로
+  연락하실 수 있습니다.
+  </p>
+</footer>
+</div>
+<div id="toast" class="toast"></div>
+<script>
+/* =====================================================================
+ * LOTTO ULTIMATE — 계산 엔진 (JavaScript 이식본)
+ * Python v1.2 + v1.3.2 패치와 수치적으로 동일해야 한다.
+ *
+ * [이식 시 가장 중요한 함수가 npSum 이다]
+ *   numpy 의 .sum()/.mean() 은 단순 좌→우 누적이 아니라 pairwise summation 이다.
+ *   8개씩 부분합을 만들고 트리 형태로 합치므로 부동소수점 반올림 순서가 다르다.
+ *   JS 에서 그냥 reduce((a,b)=>a+b) 로 짜면 1e-16 수준에서 반드시 어긋난다.
+ *   아래 npSum 은 numpy 의 pairwise_sum 알고리즘을 그대로 복제한 것이다.
+ * ===================================================================== */
+
+const PRIME = new Set([2,3,5,7,11,13,17,19,23,29,31,37,41,43]);
+
+/* numpy/core/src/umath/loops_utils: pairwise_sum_DOUBLE 복제 */
+function npSum(a, start, n) {
+  if (start === undefined) { start = 0; n = a.length; }
+  if (n < 8) {
+    let res = 0;
+    for (let i = 0; i < n; i++) res += a[start + i];
+    return res;
+  }
+  if (n <= 128) {
+    const r = [a[start],a[start+1],a[start+2],a[start+3],
+               a[start+4],a[start+5],a[start+6],a[start+7]];
+    const lim = n - (n % 8);
+    for (let i = 8; i < lim; i += 8)
+      for (let j = 0; j < 8; j++) r[j] += a[start + i + j];
+    let res = ((r[0]+r[1])+(r[2]+r[3])) + ((r[4]+r[5])+(r[6]+r[7]));
+    for (let i = lim; i < n; i++) res += a[start + i];
+    return res;
+  }
+  let half = n / 2;
+  half -= (half % 8);
+  return npSum(a, start, half) + npSum(a, start + half, n - half);
+}
+const npMean = (a) => npSum(a) / a.length;
+
+/* [v1.3.3] 거듭제곱은 반복 곱셈으로 생성한다.
+   Math.pow 와 Python 의 ** 는 IEEE-754 가 pow 의 정확한 반올림을 요구하지
+   않아 지수의 약 10% 에서 1 ULP 어긋난다(실측 0.97^k: 1245개 중 100개).
+   곱셈은 정확히 규정되므로 반복 곱셈이면 두 언어가 비트 단위로 일치한다. */
+function decayPowers(base, n) {
+  const m = Math.max(n, 1);
+  const out = new Float64Array(m);
+  let p = 1;
+  for (let i = 0; i < m; i++) { out[i] = p; p *= base; }
+  return out;
+}
+
+/* numpy.percentile(method='linear') 복제. _lerp 의 t>=0.5 분기까지 재현 */
+function npPercentile(arr, q) {
+  const a = Float64Array.from(arr); a.sort();
+  const n = a.length;
+  if (n === 1) return a[0];
+  const vi = (q / 100) * (n - 1);
+  const i = Math.floor(vi), t = vi - i;
+  if (i + 1 >= n) return a[n - 1];
+  const lo = a[i], hi = a[i + 1], diff = hi - lo;
+  return t < 0.5 ? lo + diff * t : hi - diff * (1 - t);
+}
+const npMedian = (a) => npPercentile(a, 50);
+
+function npVar(a) {
+  const m = npMean(a);
+  const d = a.map(x => (x - m) * (x - m));
+  return npSum(d) / a.length;
+}
+
+/* DataEngine._robust_normalize 복제 (길이 46 입력 기준) */
+function robustNormalize(arr) {
+  const s = Array.from(arr).slice(1);          // arr[1:]
+  const mx = Math.max(...s), mn = Math.min(...s);
+  const out = Float64Array.from(arr);
+  if (s.length === 0 || mx === mn) return out;
+  const median = npMedian(s);
+  const q25 = npPercentile(s, 25), q75 = npPercentile(s, 75);
+  const iqr = q75 - q25;
+  let norm;
+  if (iqr > 0) {
+    norm = s.map(v => {
+      let x = (v - median) / iqr;
+      if (x < -2) x = -2; if (x > 2) x = 2;
+      return (x + 2) / 4;
+    });
+  } else {
+    norm = mx > 0 ? s.map(v => v / mx) : s.slice();
+  }
+  for (let i = 0; i < 45; i++) out[i + 1] = norm[i];
+  return out;
+}
+
+/* ── CSV 로더 (6중 방어 / 3형식 자동 인식) ───────────────────────── */
+function safeLoadHistory(text) {
+  const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
+  if (!lines.length) throw new Error('빈 파일입니다.');
+  const split = (l) => l.split(',').map(x => x.trim());
+  let header = split(lines[0]);
+  const lower = header.map(h => h.toLowerCase());
+  const hasHeader = lower.some(h => /num|회차|round|번호|draw/.test(h)) ||
+                    isNaN(Number(header[0]));
+  let numIdx = null;
+  if (hasHeader) {
+    const idx = [];
+    for (let k = 1; k <= 6; k++) {
+      const j = lower.indexOf('num' + k);
+      if (j >= 0) idx.push(j);
+    }
+    if (idx.length === 6) numIdx = idx;                       // 표준 컬럼형
+  }
+  /* [v1.3.4] 회차/추첨일 열 위치도 찾아둔다 — CSV 재생성에 필요 */
+  let roundIdx = -1, dateIdx = -1;
+  if (hasHeader) {
+    roundIdx = lower.findIndex(h => /^(round|회차)$/.test(h));
+    dateIdx  = lower.findIndex(h => /date|추첨일|날짜/.test(h));
+  }
+  const body = hasHeader ? lines.slice(1) : lines;
+  const out = [], meta = [];
+  let dropped = 0;
+  for (const line of body) {
+    let cells = split(line);
+    while (cells.length && cells[cells.length - 1] === '') cells.pop();  // 유령 열
+    let nums;
+    if (numIdx) nums = numIdx.map(j => Number(cells[j]));
+    else {
+      const vals = cells.map(Number).filter(v => Number.isFinite(v) && v >= 1 && v <= 45);
+      nums = vals.slice(-6);                                   // 동행복권 원본형
+    }
+    if (nums.length !== 6 || nums.some(v => !Number.isFinite(v))) { dropped++; continue; }
+    const ints = nums.map(v => Math.trunc(v));
+    if (ints.some(v => v < 1 || v > 45) || new Set(ints).size !== 6) { dropped++; continue; }
+    out.push(ints.slice().sort((a, b) => a - b));
+    meta.push({
+      round: roundIdx >= 0 && cells[roundIdx] ? Number(cells[roundIdx]) : out.length,
+      date:  dateIdx  >= 0 && cells[dateIdx]  ? cells[dateIdx] : '',
+    });
+  }
+  if (!out.length) throw new Error('유효한 회차가 0건입니다. CSV 열 구조를 확인하세요.');
+  return { history: out, meta, dropped };
+}
+
+/* ── 분석 엔진 ───────────────────────────────────────────────────── */
+const RECENCY_DECAY = 0.97;
+const CFG = {
+  RECENT_PERIODS: [10, 30, 50, 100],
+  MARKOV_ALPHA: 1.0, MARKOV_DECAY: 0.999, ASSOC_WINDOW: 300,
+  W: { frequency:0.15, recency:0.15, gap:0.13, pair:0.12,
+       momentum:0.16, zone:0.11, markov:0.10, assoc:0.08 },
+  SUM_RANGE:[95,200], MIN_AC:7, ODD:[2,3,4], HIGH:[2,3,4],
+  MIN_ZONES:3, MAX_PER_ZONE:3, MIN_UNIQ_END:3, MAX_SAME_END:2,
+  PRIME_RANGE:[1,4], MAX_CONSEC:2, PREV_MATCH:[0,3], MAX_SET_OVERLAP:1,
+};
+
+function analyze(history) {
+  const T = history.length;
+  const last = T ? history[T - 1] : [];
+  const z = () => new Float64Array(46);
+
+  /* 빈도 */
+  const byPeriod = {};
+  for (const p of CFG.RECENT_PERIODS) {
+    if (p <= T) {
+      const c = new Float64Array(46);
+      for (const row of history.slice(-p)) for (const n of row) c[n]++;
+      byPeriod[p] = c;
+    }
+  }
+  const pw = [[10,4.0],[30,2.5],[50,1.5],[100,1.0]];
+  let freq = z();
+  for (let n = 1; n <= 45; n++) {
+    let s = 0;
+    for (const [p, w] of pw) {
+      if (byPeriod[p]) { const exp = (p * 6) / 45; s += exp > 0 ? (byPeriod[p][n] / exp) * w : 0; }
+    }
+    freq[n] = s;
+  }
+  freq = robustNormalize(freq);
+
+  /* 갭 */
+  const app = Array.from({length:46}, () => []);
+  history.forEach((row, i) => row.forEach(n => app[n].push(i)));
+  let gap = z(); const gapRaw = {}, avgGap = {};
+  for (let n = 1; n <= 45; n++) {
+    if (app[n].length > 1) {
+      const gs = [];
+      for (let i = 0; i < app[n].length - 1; i++) gs.push(app[n][i+1] - app[n][i]);
+      avgGap[n] = npMean(gs);
+      gapRaw[n] = T - 1 - app[n][app[n].length - 1];
+      const ratio = avgGap[n] > 0 ? gapRaw[n] / avgGap[n] : 1;
+      if (ratio >= 0.8 && ratio <= 1.5) gap[n] = 1.0 - Math.abs(ratio - 1.0) * 0.3;
+      else if (ratio > 1.5) gap[n] = Math.max(0.15, 1.0 - (ratio - 1.5) * 0.2);
+      else gap[n] = Math.max(0.25, ratio * 0.6);
+    } else { gapRaw[n] = T; avgGap[n] = T / 2; gap[n] = 0.3; }
+  }
+  gap = robustNormalize(gap);
+
+  /* 쌍 */
+  const window = Math.min(100, T);
+  const pairCount = new Map();
+  for (const row of history.slice(-window)) {
+    const r = row.slice().sort((a,b)=>a-b);
+    for (let i = 0; i < 6; i++) for (let j = i+1; j < 6; j++) {
+      const k = r[i] + ',' + r[j];
+      pairCount.set(k, (pairCount.get(k) || 0) + 1);
+    }
+  }
+  const pairScore = Array.from({length:46}, () => new Float64Array(46));
+  let pairStr = z();
+  for (const [k, c] of pairCount) {
+    const [a, b] = k.split(',').map(Number);
+    const st = c / window;
+    pairScore[a][b] = st; pairScore[b][a] = st;
+    pairStr[a] += st; pairStr[b] += st;
+  }
+  const topPairs = [...pairCount.entries()].map(([k,v]) => [k.split(',').map(Number), v]);
+  topPairs.sort((x,y) => y[1] - x[1]);
+  pairStr = robustNormalize(pairStr);
+
+  /* 모멘텀 */
+  let mom = z();
+  if (T >= 30) {
+    const r10 = new Float64Array(46), r30 = new Float64Array(46);
+    for (const row of history.slice(-10)) for (const n of row) r10[n]++;
+    for (const row of history.slice(-30)) for (const n of row) r30[n]++;
+    for (let n = 1; n <= 45; n++) {
+      const sh = r10[n] / 10, mid = r30[n] / 30;
+      mom[n] = mid > 0 ? sh / mid : (sh > 0 ? 1.0 : 0.5);
+    }
+  }
+  mom = robustNormalize(mom);
+
+  /* 구간 */
+  const zone = z();
+  const zones = [[1,10],[11,20],[21,30],[31,40],[41,45]];
+  const recent = T >= 50 ? history.slice(-50) : history;
+  const zf = new Map(zones.map(zz => [zz.join(','), new Float64Array(46)]));
+  for (const row of recent) for (const n of row) {
+    for (const [s,e] of zones) if (n >= s && n <= e) { zf.get(s+','+e)[n]++; break; }
+  }
+  for (const [s,e] of zones) {
+    const arr = zf.get(s+','+e); const nums = [];
+    for (let n = s; n <= e; n++) nums.push(arr[n]);
+    const mx = nums.length ? Math.max(...nums) : 1;
+    nums.forEach((v, i) => { zone[s + i] = mx > 0 ? v / mx : 0; });
+  }
+
+  /* 마르코프 */
+  const alpha = CFG.MARKOV_ALPHA, decay = CFG.MARKOV_DECAY;
+  const trans = Array.from({length:46}, () => new Float64Array(46));
+  const mkPow = decayPowers(decay, T);
+  for (let t = 1; t < T; t++) {
+    const w = mkPow[T - 1 - t];
+    for (const m of history[t-1]) for (const n of history[t]) trans[m][n] += w;
+  }
+  const prob = Array.from({length:46}, () => new Float64Array(46));
+  for (let m = 1; m <= 45; m++) {
+    const rowSum = npSum(trans[m], 1, 45);
+    for (let n = 1; n <= 45; n++) prob[m][n] = (trans[m][n] + alpha) / (rowSum + alpha * 45);
+  }
+  let mk = z(); const mkRaw = z();
+  const basis = last.length ? last : [1,2,3,4,5,6];
+  for (let n = 1; n <= 45; n++) {
+    mkRaw[n] = npMean(basis.map(m => prob[m][n]));
+    mk[n] = mkRaw[n];
+  }
+  mk = robustNormalize(mk);
+
+  /* 연관규칙 Lift */
+  const aw = Math.min(CFG.ASSOC_WINDOW, T);
+  const arecent = history.slice(-aw);
+  const single = new Float64Array(46); const pr = new Map();
+  for (const row of arecent) {
+    for (const n of row) single[n]++;
+    const r = row.slice().sort((a,b)=>a-b);
+    for (let i=0;i<6;i++) for (let j=i+1;j<6;j++) {
+      const k = r[i]+','+r[j]; pr.set(k, (pr.get(k)||0)+1);
+    }
+  }
+  const eps = 1e-9, pOne = new Float64Array(46);
+  for (let n=1;n<=45;n++) pOne[n] = (single[n] + 1) / (aw + 45);
+  const lift = Array.from({length:46}, () => new Map());
+  for (const [k, c] of pr) {
+    const [a,b] = k.split(',').map(Number);
+    const pab = (c + 1) / (aw + 45);
+    const v = pab / (pOne[a] * pOne[b] + eps);
+    lift[a].set(b, v); lift[b].set(a, v);
+  }
+  let ac = z(); const acRaw = z();
+  for (let n=1;n<=45;n++) {
+    const vals = basis.filter(m => m !== n).map(m => lift[n].has(m) ? lift[n].get(m) : 1.0);
+    acRaw[n] = vals.length ? npMean(vals) : 1.0;
+    ac[n] = acRaw[n];
+  }
+  ac = robustNormalize(ac);
+
+  /* recency (v1.3.1 연속화) */
+  let rec = z();
+  const recPow = decayPowers(RECENCY_DECAY, T);
+  history.forEach((row, t) => {
+    const w = recPow[T - 1 - t];
+    for (const n of row) rec[n] += w;
+  });
+  rec = robustNormalize(rec);
+
+  /* 최종 점수 */
+  const W = CFG.W; const final = z();
+  for (let n = 1; n <= 45; n++) {
+    final[n] = freq[n]*W.frequency + rec[n]*W.recency + gap[n]*W.gap
+             + pairStr[n]*W.pair + mom[n]*W.momentum + zone[n]*W.zone
+             + mk[n]*W.markov + ac[n]*W.assoc;
+  }
+  const tot = npSum(final, 1, 45);
+  if (tot > 0) for (let n = 1; n <= 45; n++) final[n] = final[n] / tot;
+
+  return { T, last, freq, gap, pairStr, mom, zone, markov:mk, markovRaw:mkRaw,
+           assoc:ac, assocRaw:acRaw, recency:rec, final, pairScore, topPairs,
+           historySets: new Set(history.map(r => r.join(','))) };
+}
+
+/* ── 인기도 모델 (v1.3.2 실측 재적합 계수) ──────────────────────── */
+const POP_COEF = { sum:-0.2033, same_row_max:-0.1055, tail_repeat:0.0474, prev_overlap:-0.0768 };
+const POP_REF  = { sum:[137.9489,29.9479], same_row_max:[2.2035,0.5524],
+                   tail_repeat:[1.8821,0.5425], prev_overlap:[0.8002,0.7836] };
+
+function popularityLog(nums, prev) {
+  const n = nums.slice().sort((a,b)=>a-b);
+  const rows = new Map(), tails = new Map();
+  for (const x of n) {
+    const r = Math.floor((x-1)/7), t = x % 10;
+    rows.set(r, (rows.get(r)||0)+1); tails.set(t, (tails.get(t)||0)+1);
+  }
+  const f = {
+    sum: npSum(n),
+    same_row_max: Math.max(...rows.values()),
+    tail_repeat: Math.max(...tails.values()),
+    prev_overlap: prev && prev.length ? n.filter(x => prev.includes(x)).length : 0,
+  };
+  const keys = ['sum','same_row_max','tail_repeat','prev_overlap'];
+  let zsum = 0;
+  for (const k of keys) { const [mu,sd] = POP_REF[k]; zsum += POP_COEF[k] * ((f[k]-mu)/sd); }
+  return zsum;
+}
+
+/* 표시용 인기도 배수. 판정에는 쓰지 않는다 (exp 는 언어 간 1 ULP 차이) */
+const popularityScore = (nums, prev) => Math.exp(popularityLog(nums, prev));
+
+/* ── 조합 필터 12종 ─────────────────────────────────────────────── */
+function filterAll(nums, eng) {
+  const n = nums.slice().sort((a,b)=>a-b);
+  const s = npSum(n);
+  if (s < CFG.SUM_RANGE[0] || s > CFG.SUM_RANGE[1]) return '합계';
+  const d = new Set();
+  for (let i=0;i<6;i++) for (let j=i+1;j<6;j++) d.add(Math.abs(n[j]-n[i]));
+  if (d.size - 5 < CFG.MIN_AC) return 'AC값';
+  if (!CFG.ODD.includes(n.filter(x=>x%2===1).length)) return '홀짝';
+  if (!CFG.HIGH.includes(n.filter(x=>x>=23).length)) return '고저';
+  const zc = [0,0,0,0,0];
+  for (const x of n) zc[Math.min(Math.floor((x-1)/10),4)]++;
+  if (zc.filter(c=>c>0).length < CFG.MIN_ZONES || Math.max(...zc) > CFG.MAX_PER_ZONE) return '구간';
+  let run = 1;
+  for (let i=0;i<5;i++) { if (n[i+1]===n[i]+1) { run++; if (run>CFG.MAX_CONSEC) return '연속'; } else run = 1; }
+  const ends = n.map(x=>x%10); const ec = new Map();
+  for (const e of ends) ec.set(e,(ec.get(e)||0)+1);
+  if (new Set(ends).size < CFG.MIN_UNIQ_END || Math.max(...ec.values()) > CFG.MAX_SAME_END) return '끝수';
+  const pc = n.filter(x=>PRIME.has(x)).length;
+  if (pc < CFG.PRIME_RANGE[0] || pc > CFG.PRIME_RANGE[1]) return '소수';
+  if (eng.last.length) {
+    const mc = n.filter(x=>eng.last.includes(x)).length;
+    if (mc < CFG.PREV_MATCH[0] || mc > CFG.PREV_MATCH[1]) return '이전회차';
+  }
+  if (eng.historySets.has(n.join(','))) return '역대중복';
+  const gaps = []; for (let i=0;i<5;i++) gaps.push(n[i+1]-n[i]);
+  const mg = npMean(gaps);
+  if (mg < 3.5 || mg > 13.0) return '간격';
+  if (n.includes(1) && n.includes(45) && n.filter(x=>x>=18&&x<=27).length < 1) return '경계';
+  return null;
+}
+
+
+/* =====================================================================
+ * 생성 엔진 (v1.3.3)
+ * ===================================================================== */
+
+/* ── 진정 난수 RNG — crypto.getRandomValues + 모듈로 바이어스 제거 ──── */
+function makeRng() {
+  const g = (typeof crypto !== 'undefined' && crypto.getRandomValues)
+    ? crypto : null;
+  const buf = new Uint32Array(2);
+  /* [0,1) 53비트 실수 — Math.random()의 구현의존 PRNG를 쓰지 않는다 */
+  function random() {
+    g.getRandomValues(buf);
+    return ((buf[0] >>> 5) * 67108864 + (buf[1] >>> 6)) / 9007199254740992;
+  }
+  /* [0,n) 정수 — 거절 표집으로 모듈로 바이어스 제거.
+     단순히 u32 % n 을 쓰면 2^32 가 n 의 배수가 아닐 때 작은 수가 더 자주 나온다. */
+  function int(n) {
+    if (n <= 0) return 0;
+    const lim = Math.floor(4294967296 / n) * n;
+    const one = new Uint32Array(1);
+    for (;;) { g.getRandomValues(one); if (one[0] < lim) return one[0] % n; }
+  }
+  /* 가중치 기반 비복원 추출 — 뽑을 때마다 제거 후 재정규화 */
+  function choice(items, weights, k) {
+    const it = Array.from(items), w = Array.from(weights), out = [];
+    for (let s = 0; s < k; s++) {
+      let tot = 0; for (const x of w) tot += x;
+      if (!(tot > 0) || !it.length) return null;
+      let u = random() * tot, idx = it.length - 1;
+      for (let i = 0; i < it.length; i++) { u -= w[i]; if (u <= 0) { idx = i; break; } }
+      out.push(it[idx]); it.splice(idx, 1); w.splice(idx, 1);
+    }
+    return out;
+  }
+  return { random, int, choice };
+}
+
+/* ── 클러스터 (Python의 sklearn 미설치 경로와 동일: 합계 3분위) ─────── */
+function simpleClusters(history) {
+  const sums = history.map(r => npSum(r));
+  const q33 = npPercentile(sums, 33), q66 = npPercentile(sums, 66);
+  const labels = sums.map(s => s < q33 ? 0 : (s < q66 ? 1 : 2));
+  const stats = {};
+  const recentN = Math.min(50, history.length);
+  for (let cid = 0; cid < 3; cid++) {
+    const idx = []; labels.forEach((l, i) => { if (l === cid) idx.push(i); });
+    let rc = 0;
+    for (let i = labels.length - recentN; i < labels.length; i++) if (labels[i] === cid) rc++;
+    stats[cid] = {
+      count: idx.length,
+      ratio: idx.length / Math.max(history.length, 1),
+      avgSum: idx.length ? npMean(idx.map(i => npSum(history[i]))) : 0,
+      avgSpread: idx.length ? npMean(idx.map(i => Math.max(...history[i]) - Math.min(...history[i]))) : 0,
+      recentRatio: recentN > 0 ? rc / recentN : 0,
+    };
+  }
+  const scored = [0,1,2].map(c => [c, stats[c].ratio*0.5 + stats[c].recentRatio*0.5])
+                        .sort((a,b) => b[1] - a[1]);
+  const top = scored.slice(0,3).map(x => x[0]);
+  const idOf = (nums) => { const s = npSum(nums); return s < q33 ? 0 : (s < q66 ? 1 : 2); };
+  const bonusOf = (nums) => { const c = idOf(nums);
+    return c === top[0] ? 1.0 : (top.slice(1).includes(c) ? 0.6 : 0.2); };
+  return { q33, q66, labels, stats, top, idOf, bonusOf };
+}
+
+/* ── 인기도 게이트 (로그 스케일) ─────────────────────────────────── */
+function makeGate(prev, rng, nSample, maxPct) {
+  nSample = nSample || 40000; maxPct = (maxPct === undefined) ? 25 : maxPct;
+  const all = new Array(45); for (let i = 0; i < 45; i++) all[i] = i + 1;
+  const flat = new Array(45).fill(1);
+  const dist = new Float64Array(nSample);
+  for (let i = 0; i < nSample; i++) {
+    const c = rng.choice(all, flat, 6);
+    dist[i] = popularityLog(c, prev);
+  }
+  dist.sort();
+  const threshold = npPercentile(Array.from(dist), maxPct);
+  const pct = (nums) => {
+    const v = popularityLog(nums, prev);
+    let lo = 0, hi = dist.length;
+    while (lo < hi) { const m = (lo + hi) >> 1; if (dist[m] < v) lo = m + 1; else hi = m; }
+    return lo / dist.length * 100;
+  };
+  return { dist, threshold, pct, passes: (n) => popularityLog(n, prev) <= threshold };
+}
+
+/* ── 생성기 ─────────────────────────────────────────────────────── */
+const SCORE_ALPHA = 2.2, CAND_MULT = 40;
+
+function generate(eng, clu, opts) {
+  opts = opts || {};
+  const count = opts.count || 5;
+  const popWeight = (opts.popWeight === undefined) ? 0.14 : opts.popWeight;
+  const rng = opts.rng || makeRng();
+  const gate = opts.gate || null;
+  const prev = eng.last;
+
+  const w = new Float64Array(45);
+  for (let i = 0; i < 45; i++) w[i] = Math.pow(Math.max(eng.final[i+1], 1e-12), SCORE_ALPHA);
+  let wt = 0; for (const x of w) wt += x;
+  for (let i = 0; i < 45; i++) w[i] /= wt;
+  const ALL = []; for (let i = 1; i <= 45; i++) ALL.push(i);
+
+  const rej = new Map(); let attempts = 0, passed = 0;
+  function tryAdd(nums, algo, out) {
+    attempts++;
+    const why = filterAll(nums, eng);
+    if (why) { rej.set(why, (rej.get(why)||0)+1); return false; }
+    if (gate && !gate.passes(nums)) { rej.set('인기도', (rej.get('인기도')||0)+1); return false; }
+    passed++; out.push({ nums: nums.slice().sort((a,b)=>a-b), algo }); return true;
+  }
+
+  const m = count * CAND_MULT;
+  const cands = [];
+
+  /* 1) 가중치 */
+  { const out = [];
+    for (let i = 0; i < m*25 && out.length < m; i++) {
+      const p = rng.choice(ALL, w, 6); if (p) tryAdd(p, 'weighted', out);
+    } cands.push(...out); }
+
+  /* 2) 구간 밸런스 */
+  { const out = []; const zs = [[1,10],[11,20],[21,30],[31,40],[41,45]];
+    for (let i = 0; i < m*25 && out.length < m; i++) {
+      const picks = [1,1,1,1,1]; picks[rng.int(5)]++;
+      const nums = []; let ok = true;
+      for (let k = 0; k < 5; k++) {
+        const zn = [], zw = [];
+        for (let n = zs[k][0]; n <= zs[k][1]; n++) { zn.push(n); zw.push(w[n-1]); }
+        const got = rng.choice(zn, zw, picks[k]);
+        if (!got) { ok = false; break; } nums.push(...got);
+      }
+      if (ok && new Set(nums).size === 6) tryAdd(nums, 'balanced', out);
+    } cands.push(...out); }
+
+  /* 3) 동반출현 패턴 */
+  { const out = []; const tp = eng.topPairs.slice(0, 30);
+    for (let i = 0; i < m*25 && out.length < m; i++) {
+      let base = [];
+      if (tp.length && rng.random() < 0.7) base = tp[rng.int(Math.min(15, tp.length))][0].slice();
+      const cur = new Set(base);
+      const it = [], iw = [];
+      for (let n = 1; n <= 45; n++) if (!cur.has(n)) { it.push(n); iw.push(w[n-1]); }
+      const got = rng.choice(it, iw, 6 - cur.size);
+      if (!got) continue; got.forEach(x => cur.add(x));
+      if (cur.size === 6) tryAdd([...cur], 'pattern', out);
+    } cands.push(...out); }
+
+  /* 4) 다중 클러스터 */
+  { const out = [];
+    for (let i = 0; i < m*30 && out.length < m; i++) {
+      const cid = clu.top[rng.int(clu.top.length)];
+      const st = clu.stats[cid];
+      const spread = Math.max(5, Math.round(st.avgSpread));
+      const first = 1 + rng.int(Math.max(1, 45 - spread));
+      let last = Math.min(45, first + spread + (rng.int(11) - 5));
+      last = Math.max(first + 5, Math.min(45, last));
+      const seeds = [...new Set([first, last])];
+      const it = [], iw = [];
+      for (let n = 1; n <= 45; n++) if (!seeds.includes(n)) { it.push(n); iw.push(w[n-1]); }
+      const got = rng.choice(it, iw, 6 - seeds.length);
+      if (!got) continue;
+      const cur = [...new Set([...seeds, ...got])];
+      if (cur.length !== 6) continue;
+      const nums = cur.sort((a,b)=>a-b);
+      if (Math.abs(npSum(nums) - Math.round(st.avgSum)) <= 35) tryAdd(nums, 'cluster_'+cid, out);
+    } cands.push(...out); }
+
+  if (!cands.length) return { sets: [], rej, attempts, passed };
+
+  /* 스코어링 */
+  const seen = new Set(), uniq = [], rn = [], rp = [];
+  for (const c of cands) {
+    const k = c.nums.join(',');
+    if (seen.has(k)) continue; seen.add(k); uniq.push(c);
+    rn.push(npSum(c.nums.map(n => eng.final[n])));
+    let ps = 0;
+    for (let i=0;i<6;i++) for (let j=i+1;j<6;j++) ps += eng.pairScore[c.nums[i]][c.nums[j]];
+    rp.push(ps);
+  }
+  const mxN = Math.max(...rn) || 1, mxP = Math.max(...rp) || 1;
+  const pops = uniq.map(c => popularityLog(c.nums, prev));
+  const pLo = Math.min(...pops), pHi = Math.max(...pops), pR = (pHi - pLo) || 1;
+  const clip = (x) => x < 0 ? 0 : (x > 1 ? 1 : x);
+
+  uniq.forEach((c, i) => {
+    const n = c.nums, s = npSum(n);
+    const d = new Set();
+    for (let a=0;a<6;a++) for (let b=a+1;b<6;b++) d.add(Math.abs(n[b]-n[a]));
+    const ac = d.size - 5;
+    const zc = [0,0,0,0,0]; for (const x of n) zc[Math.min(Math.floor((x-1)/10),4)]++;
+    const avoid = 1 - (pops[i] - pLo) / pR;
+    c.stat = { sum:s, ac, odd:n.filter(x=>x%2===1).length,
+               high:n.filter(x=>x>=23).length, prime:n.filter(x=>PRIME.has(x)).length,
+               clusterId: clu.idOf(n), popLog: pops[i] };
+    c.score = clip(rn[i]/mxN)*0.28 + clip(rp[i]/mxP)*0.17
+            + (s>=110 && s<=190 ? 1.0 : 0.5)*0.10 + clip(ac/10)*0.10
+            + clip(1/(1+npVar(zc)))*0.12 + clu.bonusOf(n)*0.09 + avoid*popWeight;
+  });
+
+  /* 풀: 클러스터 + 알고리즘 이중 쿼터 */
+  const srt = uniq.slice().sort((a,b) => b.score - a.score);
+  const poolSize = Math.max(count*30, 150), pool = [], inPool = new Set();
+  for (const key of ['clusterId','algo']) {
+    const grp = new Map();
+    for (const c of srt) {
+      const g = key==='algo' ? c.algo.split('_')[0] : c.stat.clusterId;
+      if (!grp.has(g)) grp.set(g, []); grp.get(g).push(c);
+    }
+    for (const [, cs] of grp) for (const c of cs.slice(0, count*3))
+      if (!inPool.has(c)) { pool.push(c); inPool.add(c); }
+  }
+  for (const c of srt) { if (pool.length >= poolSize) break;
+    if (!inPool.has(c)) { pool.push(c); inPool.add(c); } }
+
+  /* 선택: 제약 4단계 완화 */
+  const sel = [], used = new Set(), cCnt = new Map(), aCnt = new Map();
+  const maxOv = CFG.MAX_SET_OVERLAP, maxCls = Math.max(1, Math.floor(count/2));
+  const maxAlg = Math.max(2, Math.floor((count+2)/3));
+  const relax = [];
+  for (let slot = 0; slot < count; slot++) {
+    let chosen = null, lvl = 0;
+    for (lvl = 0; lvl < 4; lvl++) {
+      let best = null, bv = -1;
+      for (const c of pool) {
+        if (sel.includes(c)) continue;
+        const ns = new Set(c.nums), cid = c.stat.clusterId, alg = c.algo.split('_')[0];
+        if (lvl < 3 && !sel.every(s => c.nums.filter(x => s.nums.includes(x)).length <= maxOv)) continue;
+        if (lvl < 2 && (cCnt.get(cid)||0) >= maxCls) continue;
+        if (lvl < 1 && (aCnt.get(alg)||0) >= maxAlg) continue;
+        let nc = 0; for (const x of ns) if (!used.has(x)) nc++;
+        const v = c.score*0.70 + (nc/6)*0.30;
+        if (v > bv) { bv = v; best = c; }
+      }
+      if (best) { chosen = best; break; }
+    }
+    if (!chosen) break;
+    if (lvl > 0) relax.push([slot+1, lvl]);
+    sel.push(chosen); chosen.nums.forEach(x => used.add(x));
+    cCnt.set(chosen.stat.clusterId, (cCnt.get(chosen.stat.clusterId)||0)+1);
+    const a = chosen.algo.split('_')[0]; aCnt.set(a, (aCnt.get(a)||0)+1);
+  }
+  if (gate) sel.forEach(c => { c.stat.popPct = gate.pct(c.nums); });
+  return { sets: sel, rej, attempts, passed, relax, candidates: uniq.length };
+}
+
+
+
+/* ── [v1.3.4] CSV 재생성 / 회차 추가 보조 ───────────────────────── */
+
+/* history + meta → 원본과 같은 형식의 CSV 문자열 */
+function buildCsv(history, meta) {
+  const head = 'round,draw date,num1,num2,num3,num4,num5,num6';
+  const rows = history.map((nums, i) => {
+    const m = (meta && meta[i]) || {};
+    return [m.round != null ? m.round : i + 1, m.date || ''].concat(nums).join(',');
+  });
+  return head + '\n' + rows.join('\n') + '\n';
+}
+
+/* 마지막 추첨일 + 7일 — 'YYYY.MM.DD' / 'YYYY-MM-DD' 모두 처리 */
+function nextDrawDate(lastDate) {
+  if (!lastDate) return '';
+  const p = String(lastDate).trim().split(/[.\-\/]/).map(Number);
+  if (p.length < 3 || p.some(isNaN)) return '';
+  const d = new Date(Date.UTC(p[0], p[1] - 1, p[2] + 7));
+  const z = (n) => String(n).padStart(2, '0');
+  const sep = String(lastDate).includes('-') ? '-' : '.';
+  return [d.getUTCFullYear(), z(d.getUTCMonth() + 1), z(d.getUTCDate())].join(sep);
+}
+
+/* 회차 추가 전 검증 — 통과하면 null, 아니면 사유 문자열 */
+function validateDraw(nums, round, history, meta) {
+  if (!Array.isArray(nums) || nums.length !== 6) return '번호 6개를 입력하세요';
+  if (nums.some(n => !Number.isInteger(n) || n < 1 || n > 45)) return '1~45 사이의 정수여야 합니다';
+  if (new Set(nums).size !== 6) return '중복된 번호가 있습니다';
+  if (!Number.isInteger(round) || round < 1) return '회차 번호가 올바르지 않습니다';
+  const lastRound = meta && meta.length ? meta[meta.length - 1].round : history.length;
+  if (round <= lastRound) return `이미 ${lastRound}회차까지 있습니다`;
+  if (round > lastRound + 1) return `${lastRound + 1}회차가 빠졌습니다 (입력: ${round}회차)`;
+  const key = nums.slice().sort((a, b) => a - b).join(',');
+  const dup = history.findIndex(r => r.join(',') === key);
+  if (dup >= 0) return `${dup + 1}회차와 동일한 조합입니다 — 확인이 필요합니다`;
+  return null;
+}
+
+
+/* ── UI 바인딩 ──────────────────────────────────────────────────── */
+let STATE = { history: null, meta: null, eng: null, clu: null, gate: null,
+               dropped: 0, last: null, dirty: false };
+const DEFAULT_CSV = 'data/new_1245.csv';   // 저장소 동봉 스냅샷
+const $ = (s) => document.querySelector(s);
+const el = (t, c, x) => { const n = document.createElement(t); if (c) n.className = c;
+  if (x !== undefined) n.textContent = x; return n; };
+const ballClass = (n) => n <= 10 ? 'b1' : n <= 20 ? 'b2' : n <= 30 ? 'b3' : n <= 40 ? 'b4' : 'b5';
+
+function toast(msg, bad) {
+  const t = $('#toast'); t.textContent = msg; t.className = 'toast show' + (bad ? ' bad' : '');
+  setTimeout(() => t.className = 'toast', 3200);
+}
+
+function loadCsv(text, quiet) {
+  try {
+    const { history, meta, dropped } = safeLoadHistory(text);
+    STATE.history = history; STATE.meta = meta; STATE.dropped = dropped;
+    STATE.dirty = false;
+    reanalyze();
+    if (!quiet) toast(`${history.length}회차 적재 완료`);
+  } catch (e) { toast('로드 실패: ' + e.message, true); }
+}
+
+/* 데이터가 바뀔 때마다 전체 재분석 — 회차 추가 후에도 동일 경로를 탄다 */
+function reanalyze() {
+  STATE.eng = analyze(STATE.history);
+  STATE.clu = simpleClusters(STATE.history);
+  STATE.gate = null;
+  renderAudit(); renderScoreboard(); fillNextRound();
+  $('#genBtn').disabled = false;
+  $('#addCard').hidden = false;
+  $('#csvBtn').disabled = !STATE.dirty;
+}
+
+/* 다음 회차 번호와 추첨일을 자동으로 채워 둔다 */
+function fillNextRound() {
+  const m = STATE.meta, lastM = m && m.length ? m[m.length - 1] : null;
+  const nextR = (lastM ? lastM.round : STATE.history.length) + 1;
+  $('#newRound').value = nextR;
+  $('#newDate').value = lastM ? nextDrawDate(lastM.date) : '';
+  $('#newNums').value = '';
+  $('#target').value = nextR;
+}
+
+/* ── 회차 추가 — 매주 한 줄씩 손으로 넣던 작업을 대신한다 ────────── */
+function addRound() {
+  if (!STATE.history) return toast('먼저 CSV를 불러오세요', true);
+  const round = +$('#newRound').value;
+  const date = $('#newDate').value.trim();
+  const nums = $('#newNums').value.split(/[,\s]+/).filter(x => x !== '').map(Number);
+  const err = validateDraw(nums, round, STATE.history, STATE.meta);
+  if (err) return toast(err, true);
+
+  const sorted = nums.slice().sort((a, b) => a - b);
+  STATE.history.push(sorted);
+  STATE.meta.push({ round, date });
+  STATE.dirty = true;
+  reanalyze();
+
+  const g = gradeRound(round, sorted);          // 예측 기록이 있으면 자동 채점
+  toast(`${round}회차 추가 완료` + (g ? ` · 예측 ${g}건 자동 채점` : ''));
+}
+
+/* 갱신된 전체 CSV 내려받기 */
+function exportCsv() {
+  if (!STATE.history) return;
+  const last = STATE.meta[STATE.meta.length - 1].round;
+  const csv = buildCsv(STATE.history, STATE.meta);
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' }));
+  a.download = `new_${last}.csv`; a.click(); URL.revokeObjectURL(a.href);
+  STATE.dirty = false; $('#csvBtn').disabled = true;
+  toast(`new_${last}.csv 내려받기`);
+}
+
+function renderAudit() {
+  const e = STATE.eng, c = STATE.clu;
+  $('#audit').innerHTML = '';
+  const rows = [
+    ['유효 회차', e.T.toLocaleString() + '회'],
+    ['제외된 행', STATE.dropped + '행'],
+    ['마지막 당첨', e.last.join(', ')],
+    ['클러스터 경계', `합계 ${c.q33.toFixed(0)} / ${c.q66.toFixed(0)}`],
+    ['상위 클러스터', 'C' + c.top.join(', C')],
+  ];
+  if (STATE.dirty) rows.push(['상태', '회차 추가됨 — CSV 내려받기 필요']);
+  for (const [k, v] of rows) {
+    const d = el('div', 'kv'); d.append(el('span', 'k', k), el('span', 'v', v));
+    $('#audit').append(d);
+  }
+  $('#auditCard').hidden = false;
+}
+
+function renderScoreboard() {
+  const f = STATE.eng.final, box = $('#board'); box.innerHTML = '';
+  const vals = []; for (let n = 1; n <= 45; n++) vals.push(f[n]);
+  const mn = Math.min(...vals), mx = Math.max(...vals);
+  for (let n = 1; n <= 45; n++) {
+    const t = (f[n] - mn) / ((mx - mn) || 1);
+    const d = el('div', 'cell');
+    d.style.setProperty('--t', t.toFixed(4));
+    d.append(el('span', 'num', n), el('span', 'bar'));
+    d.title = `${n}번 · 점수 ${(f[n] * 100).toFixed(3)}%`;
+    box.append(d);
+  }
+  $('#boardCard').hidden = false;
+}
+
+function run() {
+  const count = +$('#count').value;
+  const pct = $('#popPct').value;
+  $('#genBtn').disabled = true; $('#genBtn').textContent = '생성 중…';
+  setTimeout(() => {
+    try {
+      const rng = makeRng();
+      const gate = pct === 'off' ? null : makeGate(STATE.eng.last, rng, 40000, +pct);
+      const r = generate(STATE.eng, STATE.clu, { count, rng, gate });
+      STATE.last = r;
+      renderResults(r, gate);
+    } catch (e) { toast('생성 실패: ' + e.message, true); }
+    $('#genBtn').disabled = false; $('#genBtn').textContent = '번호 생성';
+  }, 30);
+}
+
+function renderResults(r, gate) {
+  const box = $('#results'); box.innerHTML = '';
+  if (!r.sets.length) { toast('조건을 만족하는 조합이 없습니다. 차단 비율을 완화해 보세요.', true); return; }
+  r.sets.forEach((s, i) => {
+    const card = el('div', 'set');
+    const head = el('div', 'setHead');
+    head.append(el('span', 'idx', 'SET ' + (i + 1)));
+    if (s.stat.popPct !== undefined)
+      head.append(el('span', 'pill', '인기 하위 ' + s.stat.popPct.toFixed(1) + '%'));
+    head.append(el('span', 'algo', s.algo));
+    const balls = el('div', 'balls');
+    s.nums.forEach(n => balls.append(el('span', 'ball ' + ballClass(n), n)));
+    const meta = el('div', 'meta',
+      `합 ${s.stat.sum} · AC ${s.stat.ac} · 홀 ${s.stat.odd} · 고 ${s.stat.high} · C${s.stat.clusterId}`);
+    card.append(head, balls, meta); box.append(card);
+  });
+  const cov = new Set(r.sets.flatMap(s => s.nums)).size;
+  const avg = r.sets[0].stat.popPct !== undefined
+    ? npMean(r.sets.map(s => s.stat.popPct)).toFixed(1) + '%' : '—';
+  $('#summary').textContent =
+    `후보 ${r.candidates}개 · 통과율 ${(r.passed / r.attempts * 100).toFixed(1)}% · ` +
+    `커버리지 ${cov}/45 · 평균 인기분위 ${avg}`;
+  $('#copyBox').value = r.sets.map(s => s.nums.join(', ')).join('\n');
+  $('#resCard').hidden = false;
+  renderPopChart(r, gate);
+}
+
+function renderPopChart(r, gate) {
+  const wrap = $('#popChart'); wrap.innerHTML = '';
+  if (!gate) { $('#popCard').hidden = true; return; }
+  const W = 560, H = 120, P = 28;
+  const d = gate.dist, n = d.length;
+  const lo = d[0], hi = d[n - 1], span = (hi - lo) || 1;
+  const BIN = 56, bins = new Array(BIN).fill(0);
+  for (let i = 0; i < n; i++) bins[Math.min(BIN - 1, Math.floor((d[i] - lo) / span * BIN))]++;
+  const bmax = Math.max(...bins);
+  const ns = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(ns, 'svg');
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`); svg.setAttribute('class', 'chart');
+  bins.forEach((v, i) => {
+    const rect = document.createElementNS(ns, 'rect');
+    const bw = (W - P * 2) / BIN;
+    rect.setAttribute('x', P + i * bw); rect.setAttribute('width', Math.max(bw - 1, 1));
+    const h = (v / bmax) * (H - 44);
+    rect.setAttribute('y', H - 24 - h); rect.setAttribute('height', h);
+    rect.setAttribute('class', 'bin'); svg.append(rect);
+  });
+  r.sets.forEach(s => {
+    const x = P + (s.stat.popLog - lo) / span * (W - P * 2);
+    const ln = document.createElementNS(ns, 'line');
+    ln.setAttribute('x1', x); ln.setAttribute('x2', x);
+    ln.setAttribute('y1', 12); ln.setAttribute('y2', H - 24);
+    ln.setAttribute('class', 'mark'); svg.append(ln);
+  });
+  [['덜 인기', P, 'start'], ['더 인기', W - P, 'end']].forEach(([t, x, a]) => {
+    const tx = document.createElementNS(ns, 'text');
+    tx.setAttribute('x', x); tx.setAttribute('y', H - 6);
+    tx.setAttribute('text-anchor', a); tx.setAttribute('class', 'axis');
+    tx.textContent = t; svg.append(tx);
+  });
+  wrap.append(svg); $('#popCard').hidden = false;
+}
+
+/* ── 예측 기록 (localStorage) ──────────────────────────────────── */
+const LSK = 'lotto_ultimate_log_v1';
+const readLog = () => { try { return JSON.parse(localStorage.getItem(LSK) || '[]'); }
+                        catch (e) { return []; } };
+const writeLog = (v) => { try { localStorage.setItem(LSK, JSON.stringify(v)); }
+                          catch (e) { toast('브라우저 저장 실패', true); } };
+
+function saveLog() {
+  if (!STATE.last || !STATE.last.sets.length) return toast('먼저 번호를 생성하세요', true);
+  const target = +$('#target').value;
+  if (!target) return toast('대상 회차를 입력하세요', true);
+  const log = readLog();
+  const ts = new Date().toISOString().slice(0, 19).replace('T', ' ');
+  let added = 0;
+  for (const s of STATE.last.sets) {
+    const key = s.nums.join(',');
+    if (log.some(r => r.round === target && r.numbers === key)) continue;
+    log.push({ ts, round: target, numbers: key, matched: null, actual: '' }); added++;
+  }
+  writeLog(log); renderLog(); toast(`${added}건 기록 (회차 ${target})`);
+}
+
+/* 한 회차를 채점한다. 수동 채점과 '회차 추가' 시 자동 채점이 같은 경로를 쓴다. */
+function gradeRound(round, nums) {
+  const set = new Set(nums), log = readLog();
+  let g = 0;
+  for (const r of log) {
+    if (r.round !== round || r.matched !== null) continue;
+    r.matched = r.numbers.split(',').map(Number).filter(x => set.has(x)).length;
+    r.actual = nums.slice().sort((a, b) => a - b).join(',');
+    g++;
+  }
+  if (g) writeLog(log);
+  renderLog();
+  return g;
+}
+
+function gradeLog() {
+  const nums = $('#actual').value.trim().split(/[,\s]+/)
+                 .map(Number).filter(x => x >= 1 && x <= 45);
+  const target = +$('#target').value;
+  if (nums.length !== 6) return toast('당첨번호 6개를 입력하세요', true);
+  toast(`${gradeRound(target, nums)}건 채점 완료`);
+}
+
+function renderLog() {
+  const log = readLog(), box = $('#logBody'); box.innerHTML = '';
+  const graded = log.filter(r => r.matched !== null);
+  log.slice().reverse().slice(0, 40).forEach(r => {
+    const tr = el('tr');
+    [r.round, r.numbers, r.matched === null ? '—' : r.matched + '개'].forEach(v =>
+      tr.append(el('td', null, String(v))));
+    box.append(tr);
+  });
+  const avg = graded.length ? npMean(graded.map(r => r.matched)) : null;
+  $('#logStat').textContent = graded.length
+    ? `채점 ${graded.length}세트 · 평균 일치 ${avg.toFixed(4)}개 (이론 무작위 0.8000)`
+    : `기록 ${log.length}세트 · 채점 대기`;
+}
+
+function exportLog() {
+  const log = readLog();
+  if (!log.length) return toast('기록이 없습니다', true);
+  const csv = 'timestamp,round,numbers,matched,actual\n' +
+    log.map(r => `${r.ts},${r.round},"${r.numbers}",${r.matched ?? ''},"${r.actual}"`).join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' }));
+  a.download = 'prediction_log.csv'; a.click(); URL.revokeObjectURL(a.href);
+}
+
+/* ── 초기화 ────────────────────────────────────────────────────── */
+window.addEventListener('DOMContentLoaded', () => {
+  const dz = $('#drop');
+  dz.addEventListener('click', () => $('#file').click());
+  dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('over'); });
+  dz.addEventListener('dragleave', () => dz.classList.remove('over'));
+  dz.addEventListener('drop', e => {
+    e.preventDefault(); dz.classList.remove('over');
+    const f = e.dataTransfer.files[0]; if (f) readFile(f);
+  });
+  $('#file').addEventListener('change', e => { const f = e.target.files[0]; if (f) readFile(f); });
+  $('#genBtn').addEventListener('click', run);
+  $('#saveBtn').addEventListener('click', saveLog);
+  $('#gradeBtn').addEventListener('click', gradeLog);
+  $('#expBtn').addEventListener('click', exportLog);
+  $('#addBtn').addEventListener('click', addRound);
+  $('#csvBtn').addEventListener('click', exportCsv);
+  $('#copyBtn').addEventListener('click', () => {
+    $('#copyBox').select(); document.execCommand('copy'); toast('복사했습니다');
+  });
+  renderLog();
+  autoload();
+});
+
+/* 저장소에 동봉된 스냅샷을 자동으로 불러온다.
+   file:// 로 직접 열면 브라우저가 fetch 를 막으므로, 실패하면 조용히 넘어가고
+   사용자가 CSV 를 끌어다 놓는 기존 경로를 그대로 쓴다. */
+function autoload() {
+  if (!window.fetch || location.protocol === 'file:') return;
+  fetch(DEFAULT_CSV, { cache: 'no-cache' })
+    .then(r => r.ok ? r.text() : Promise.reject())
+    .then(t => { loadCsv(t, true); toast(`동봉 데이터 ${STATE.history.length}회차 로드`); })
+    .catch(() => {});
+}
+
+/* CP949/UTF-8 자동 감지 — UTF-8로 먼저 읽고 깨짐 문자가 있으면 CP949로 재시도 */
+function readFile(f) {
+  const fr = new FileReader();
+  fr.onload = () => {
+    let text = fr.result;
+    if (/�/.test(text)) {
+      const fr2 = new FileReader();
+      fr2.onload = () => loadCsv(fr2.result);
+      fr2.readAsText(f, 'EUC-KR');
+      return;
+    }
+    loadCsv(text);
+  };
+  fr.readAsText(f, 'UTF-8');
+}
+
+</script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.venv/
+venv/
+node_modules/
+verify/pyref.json
+verify/pyclu.json
+prediction_log.csv
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
