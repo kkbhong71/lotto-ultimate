@@ -9,6 +9,8 @@
   --bg:#0e1116; --panel:#161b23; --panel2:#1c222c; --line:#2a323f;
   --fg:#e6edf5; --dim:#8b97a8; --accent:#5aa9ff; --good:#3fbf7f; --warn:#e8b23a;
   --b1:#f5c33b; --b2:#4aa3f0; --b3:#e8614d; --b4:#8d96a5; --b5:#4fbd85;
+  /* 진행 단계 색 — 데이터(파랑) · 생성(초록) · 기록(보라) · 참고(회색) */
+  --st-data:#5aa9ff; --st-gen:#3fbf7f; --st-log:#a98bff; --st-ref:#8b97a8;
 }
 @media (prefers-color-scheme:light){
   :root:not([data-theme="dark"]){
@@ -25,7 +27,43 @@ header{margin-bottom:22px}
 h1{font-size:1.5rem;margin:0 0 4px;letter-spacing:-.02em}
 .sub{color:var(--dim);font-size:.86rem;margin:0}
 .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;
-  padding:18px;margin-bottom:16px}
+  padding:18px;margin-bottom:16px;position:relative;overflow:hidden}
+/* 카드 왼쪽 색 띠 = 그 카드가 속한 단계 */
+.card[data-step]::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;
+  background:var(--sc,var(--line))}
+.card[data-step="data"]{--sc:var(--st-data)}
+.card[data-step="gen"]{--sc:var(--st-gen)}
+.card[data-step="log"]{--sc:var(--st-log)}
+.card[data-step="ref"]{--sc:var(--st-ref)}
+.card[data-step] h2{display:flex;align-items:center;gap:8px}
+.tag{font-size:.64rem;letter-spacing:.04em;padding:2px 7px;border-radius:999px;
+  background:color-mix(in srgb,var(--sc) 20%,transparent);color:var(--sc);
+  font-weight:700;flex:none}
+
+/* 맨 위 실행 순서 안내 */
+.guide{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:10px}
+.gstep{background:var(--panel2);border:1px solid var(--line);border-left:3px solid var(--sc);
+  border-radius:10px;padding:11px 13px;text-decoration:none;color:inherit;display:block;
+  transition:.15s}
+.gstep:hover{border-color:var(--sc);transform:translateY(-1px)}
+.gstep .gn{display:inline-grid;place-items:center;width:19px;height:19px;border-radius:50%;
+  background:var(--sc);color:#0e1116;font-size:.7rem;font-weight:800;margin-right:6px}
+.gstep .gt{font-size:.86rem;font-weight:600}
+.gstep .gw{display:block;font-size:.72rem;color:var(--dim);margin-top:5px;line-height:1.5}
+.gwhen{font-size:.66rem;color:var(--sc);font-weight:700;letter-spacing:.03em}
+
+/* 45볼 스코어보드 */
+#board{display:grid;grid-template-columns:repeat(auto-fill,minmax(52px,1fr));gap:6px}
+.cell{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:6px 4px;text-align:center}
+.cell .num{display:block;font-size:.8rem;font-weight:700;font-variant-numeric:tabular-nums;
+  width:24px;height:24px;line-height:24px;margin:0 auto;border-radius:50%;color:#15202b}
+.cell .bar{display:block;height:4px;margin-top:5px;border-radius:2px;
+  background:color-mix(in srgb,var(--dim) calc(var(--t)*100%),var(--line))}
+.z1 .num{background:var(--b1)}.z2 .num{background:var(--b2)}.z3 .num{background:var(--b3)}
+.z4 .num{background:var(--b4)}.z5 .num{background:var(--b5)}
+.legend{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:11px;font-size:.73rem;color:var(--dim)}
+.legend span{display:flex;align-items:center;gap:5px}
+.legend i{width:12px;height:12px;border-radius:50%;display:inline-block}
 .card h2{font-size:.82rem;text-transform:uppercase;letter-spacing:.08em;
   color:var(--dim);margin:0 0 14px;font-weight:600}
 #drop{border:1.5px dashed var(--line);border-radius:12px;padding:30px 16px;text-align:center;
@@ -59,11 +97,6 @@ button.ghost{background:var(--panel2);color:var(--fg);border:1px solid var(--lin
 .b4{background:var(--b4)}.b5{background:var(--b5)}
 .meta{color:var(--dim);font-size:.78rem;margin-top:9px;font-variant-numeric:tabular-nums}
 #summary{color:var(--dim);font-size:.8rem;margin:4px 0 14px;font-variant-numeric:tabular-nums}
-#board{display:grid;grid-template-columns:repeat(auto-fill,minmax(52px,1fr));gap:6px}
-.cell{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:6px 4px;text-align:center}
-.cell .num{display:block;font-size:.8rem;font-weight:600;font-variant-numeric:tabular-nums}
-.cell .bar{display:block;height:4px;margin-top:5px;border-radius:2px;
-  background:color-mix(in srgb,var(--accent) calc(var(--t)*100%),var(--line))}
 .chart{width:100%;height:auto}
 .bin{fill:var(--line)} .mark{stroke:var(--good);stroke-width:2}
 .axis{fill:var(--dim);font-size:11px}
@@ -94,11 +127,35 @@ footer{border-top:1px solid var(--line);margin-top:28px;padding-top:18px}
 <div class="wrap">
 <header>
   <h1>LOTTO ULTIMATE</h1>
-  <p class="sub">인기 조합 회피 엔진 v1.3.4 · Oseong Vibe Coding EduHub</p>
+  <p class="sub">인기 조합 회피 엔진 v1.3.5 · Oseong Vibe Coding EduHub</p>
 </header>
 
-<div class="card">
-  <h2>1 · 당첨번호 데이터</h2>
+<div class="card" data-step="ref">
+  <h2><span class="tag">순서</span>이렇게 쓰면 됩니다</h2>
+  <div class="guide">
+    <a class="gstep" href="#addCard" style="--sc:var(--st-data)">
+      <span class="gwhen">추첨 후</span>
+      <div class="gt"><span class="gn">1</span>회차 추가</div>
+      <span class="gw">당첨번호 6개를 넣으면 분석이 갱신되고 지난 예측이 자동 채점됩니다.</span></a>
+    <a class="gstep" href="#genCard" style="--sc:var(--st-gen)">
+      <span class="gwhen">추첨 전</span>
+      <div class="gt"><span class="gn">2</span>번호 생성</div>
+      <span class="gw">회피 강도를 고르고 5세트를 만듭니다.</span></a>
+    <a class="gstep" href="#logCard" style="--sc:var(--st-log)">
+      <span class="gwhen">추첨 전</span>
+      <div class="gt"><span class="gn">3</span>예측 기록</div>
+      <span class="gw">복권을 사기 전에 눌러 기록을 남깁니다.</span></a>
+    <a class="gstep" href="#addCard" style="--sc:var(--st-data)">
+      <span class="gwhen">가끔</span>
+      <div class="gt"><span class="gn">4</span>CSV 보관</div>
+      <span class="gw">받은 latest.csv를 저장소 data/에 덮어 커밋합니다.</span></a>
+  </div>
+  <p class="note" style="margin:12px 0 0">추첨이 끝난 뒤 오셨으면 <strong>1번부터</strong>,
+  아직 추첨 전이면 <strong>2번부터</strong> 하시면 됩니다. 데이터는 접속할 때 자동으로 올라옵니다.</p>
+</div>
+
+<div class="card" data-step="data">
+  <h2><span class="tag">데이터</span>1 · 당첨번호 데이터</h2>
   <div id="drop">
     <strong>CSV 파일을 끌어다 놓거나 클릭</strong>
     <span>동행복권 원본 / 표준 컬럼(num1~num6) / 추첨일 포함 형식 자동 인식<br>저장소 동봉 데이터는 자동으로 불러옵니다 — 더 최신 파일이 있을 때만 올리세요</span>
@@ -106,13 +163,13 @@ footer{border-top:1px solid var(--line);margin-top:28px;padding-top:18px}
   <input id="file" type="file" accept=".csv,text/csv" hidden>
 </div>
 
-<div class="card" id="auditCard" hidden>
-  <h2>데이터 감사</h2>
+<div class="card" data-step="data" id="auditCard" hidden>
+  <h2><span class="tag">데이터</span>데이터 감사</h2>
   <div id="audit"></div>
 </div>
 
-<div class="card" id="addCard" hidden>
-  <h2>1-B · 새 회차 추가</h2>
+<div class="card" data-step="data" id="addCard" hidden>
+  <h2><span class="tag">1 · 추첨 후</span>새 회차 추가</h2>
   <div class="controls">
     <div style="flex:0 0 90px"><label for="newRound">회차</label>
       <input id="newRound" type="number" style="width:100%"></div>
@@ -128,24 +185,25 @@ footer{border-top:1px solid var(--line);margin-top:28px;padding-top:18px}
   <strong>자동 채점</strong>됩니다. <strong>CSV 내려받기</strong>로 받은 <code>latest.csv</code>를 저장소 <code>data/</code>에 덮어 커밋하면, 다음 접속부터 자동으로 최신 데이터가 올라옵니다.</p>
 </div>
 
-<div class="card">
-  <h2>2 · 생성 설정</h2>
+<div class="card" data-step="gen" id="genCard">
+  <h2><span class="tag">2 · 추첨 전</span>번호 생성</h2>
   <div class="controls">
     <div><label for="count">세트 수</label>
       <input id="count" type="number" min="1" max="10" value="5"></div>
-    <div><label for="popPct">인기 조합 차단</label>
+    <div><label for="popPct">인기 조합 회피 강도</label>
       <select id="popPct">
-        <option value="25">상위 75% 차단 (하위 25%만)</option>
-        <option value="10" selected>상위 90% 차단 (하위 10%만)</option>
-        <option value="5">상위 95% 차단 (하위 5%만)</option>
-        <option value="off">차단 안 함 (감점만)</option>
+        <option value="max">최대 — 최저 인기 우선 (권장)</option>
+        <option value="25">약함 — 하위 25%</option>
+        <option value="10" selected>보통 — 하위 10%</option>
+        <option value="5">강함 — 하위 5%</option>
+        <option value="off">끔 — 감점만</option>
       </select></div>
     <button id="genBtn" disabled>번호 생성</button>
   </div>
 </div>
 
-<div class="card" id="resCard" hidden>
-  <h2>3 · 추천 조합</h2>
+<div class="card" data-step="gen" id="resCard" hidden>
+  <h2><span class="tag">2 · 추첨 전</span>추천 조합</h2>
   <p id="summary"></p>
   <div id="results"></div>
   <label for="copyBox" style="margin-top:12px">복사용</label>
@@ -153,20 +211,34 @@ footer{border-top:1px solid var(--line);margin-top:28px;padding-top:18px}
   <div style="margin-top:9px"><button class="ghost" id="copyBtn">클립보드 복사</button></div>
 </div>
 
-<div class="card" id="popCard" hidden>
-  <h2>인기도 분포에서의 위치</h2>
+<div class="card" data-step="ref" id="popCard" hidden>
+  <h2><span class="tag">참고</span>인기도 분포에서의 위치</h2>
   <div id="popChart"></div>
   <p class="note">회색은 무작위 4만 조합의 인기도 분포, 초록 선은 이번 추천 조합의 위치입니다.
   왼쪽일수록 대중이 덜 고르는 조합이라 당첨 시 나눠 가질 사람이 적습니다.</p>
 </div>
 
-<div class="card" id="boardCard" hidden>
-  <h2>45볼 스코어보드</h2>
+<div class="card" data-step="ref" id="boardCard" hidden>
+  <h2><span class="tag">참고</span>45볼 스코어보드</h2>
+  <p class="note" style="margin:0 0 11px">공 색은 <strong>번호 구간</strong>, 아래 막대 길이는
+  8종 통계 점수를 합친 <strong>종합 점수</strong>입니다. 숫자에 마우스를 올리면 정확한 값이 나옵니다.</p>
+  <div class="legend">
+    <span><i style="background:var(--b1)"></i>1–10</span>
+    <span><i style="background:var(--b2)"></i>11–20</span>
+    <span><i style="background:var(--b3)"></i>21–30</span>
+    <span><i style="background:var(--b4)"></i>31–40</span>
+    <span><i style="background:var(--b5)"></i>41–45</span>
+  </div>
   <div id="board"></div>
+  <p class="note" style="margin:12px 0 0"><strong>막대가 긴 번호를 직접 고르지는 마세요.</strong>
+  이 점수에 예측력이 없다는 것은 500회차 walk-forward 검정으로 확인됐습니다(8종 전부 p&gt;0.12,
+  Holm-Bonferroni 보정 후 유의 항목 0개). 막대가 길어도 더 잘 나오지 않습니다.
+  엔진이 무엇을 보고 있는지 확인하는 창이자, 그럴듯한 숫자가 예측력을 뜻하지 않는다는 것을
+  보여주는 교육용 패널입니다.</p>
 </div>
 
-<div class="card">
-  <h2>4 · 예측 기록 · 사후 채점</h2>
+<div class="card" data-step="log" id="logCard">
+  <h2><span class="tag">3 · 기록</span>예측 기록 · 사후 채점</h2>
   <div class="controls" style="margin-bottom:12px">
     <div><label for="target">대상 회차</label>
       <input id="target" type="number" placeholder="1246"></div>
@@ -868,6 +940,68 @@ function validateDraw(nums, round, history, meta) {
 }
 
 
+/* =====================================================================
+ * 최대 회피 생성 (v1.3.5)
+ *
+ * 게이트를 조이는 방식은 기각 표집이라 분위가 낮아질수록 생성이 기하급수적으로
+ * 느려진다(하위 2% 게이트 = 전체의 0.9%만 통과). 대신 필터를 통과하는 후보를
+ * 넉넉히 모아 인기도 오름차순으로 훑으면서 중복 제약을 만족하는 것부터 채택하면,
+ * 같은 시간에 훨씬 낮은 분위에 도달한다.
+ *
+ * 실측(후보 3,000개): 평균 분위 1.93% / 수령 배수 1.63x — 기존 ~4% / 1.50x 대비 개선.
+ *
+ * 가중 표집을 쓰지 않는 이유: 8종 통계 점수는 예측력이 0으로 확인됐으므로,
+ * 그것으로 후보 풀을 좁히면 회피 여지만 줄어든다. 여기서는 균등 표집이 낫다.
+ * ===================================================================== */
+function generateMaxAvoid(eng, clu, opts) {
+  opts = opts || {};
+  const count = opts.count || 5;
+  const poolTarget = opts.poolTarget || 3000;
+  const rng = opts.rng || makeRng();
+  const prev = eng.last;
+  const ALL = []; for (let i = 1; i <= 45; i++) ALL.push(i);
+  const flat = new Array(45).fill(1);
+
+  const rej = new Map(); let attempts = 0, passed = 0;
+  const pool = []; const seen = new Set();
+  const budget = poolTarget * 10;
+  for (let i = 0; i < budget && pool.length < poolTarget; i++) {
+    const c = rng.choice(ALL, flat, 6);
+    if (!c) continue;
+    const nums = c.slice().sort((a, b) => a - b);
+    const key = nums.join(',');
+    if (seen.has(key)) continue;
+    seen.add(key); attempts++;
+    const why = filterAll(nums, eng);
+    if (why) { rej.set(why, (rej.get(why) || 0) + 1); continue; }
+    passed++;
+    pool.push({ nums, algo: 'avoid', popLog: popularityLog(nums, prev) });
+  }
+  pool.sort((a, b) => a.popLog - b.popLog);
+
+  /* 인기도가 낮은 것부터, 세트 간 중복이 MAX_SET_OVERLAP 이하인 것만 채택 */
+  const maxOv = CFG.MAX_SET_OVERLAP, sel = [];
+  for (const c of pool) {
+    if (sel.every(s => c.nums.filter(x => s.nums.includes(x)).length <= maxOv)) {
+      sel.push(c);
+      if (sel.length === count) break;
+    }
+  }
+  const pLo = pool.length ? pool[0].popLog : 0;
+  const pHi = pool.length ? pool[pool.length - 1].popLog : 1;
+  const pR = (pHi - pLo) || 1;
+  sel.forEach(c => {
+    const n = c.nums, sum = npSum(n);
+    const d = new Set();
+    for (let a = 0; a < 6; a++) for (let b = a + 1; b < 6; b++) d.add(Math.abs(n[b] - n[a]));
+    c.stat = { sum, ac: d.size - 5, odd: n.filter(x => x % 2 === 1).length,
+               high: n.filter(x => x >= 23).length, prime: n.filter(x => PRIME.has(x)).length,
+               clusterId: clu.idOf(n), popLog: c.popLog };
+    c.score = 1 - (c.popLog - pLo) / pR;
+  });
+  return { sets: sel, rej, attempts, passed, relax: [], candidates: pool.length };
+}
+
 /* ── UI 바인딩 ──────────────────────────────────────────────────── */
 let STATE = { history: null, meta: null, eng: null, clu: null, gate: null,
                dropped: 0, last: null, dirty: false };
@@ -970,10 +1104,12 @@ function renderScoreboard() {
   const mn = Math.min(...vals), mx = Math.max(...vals);
   for (let n = 1; n <= 45; n++) {
     const t = (f[n] - mn) / ((mx - mn) || 1);
-    const d = el('div', 'cell');
+    /* 공 색은 번호 구간(결과 카드의 공과 같은 규칙), 막대 길이는 종합 점수 */
+    const zone = n <= 10 ? 'z1' : n <= 20 ? 'z2' : n <= 30 ? 'z3' : n <= 40 ? 'z4' : 'z5';
+    const d = el('div', 'cell ' + zone);
     d.style.setProperty('--t', t.toFixed(4));
     d.append(el('span', 'num', n), el('span', 'bar'));
-    d.title = `${n}번 · 점수 ${(f[n] * 100).toFixed(3)}%`;
+    d.title = `${n}번 · 종합 점수 ${(f[n] * 100).toFixed(3)}% (예측력 없음 · 참고용)`;
     box.append(d);
   }
   $('#boardCard').hidden = false;
@@ -986,9 +1122,13 @@ function run() {
   setTimeout(() => {
     try {
       const rng = makeRng();
-      const gate = pct === 'off' ? null : makeGate(STATE.eng.last, rng, 40000, +pct);
-      const r = generate(STATE.eng, STATE.clu, { count, rng, gate });
-      STATE.last = r;
+      /* 분위 표시는 어느 모드에서나 같은 기준선을 쓴다 */
+      const gate = makeGate(STATE.eng.last, rng, 40000, pct === 'max' || pct === 'off' ? 100 : +pct);
+      const r = pct === 'max'
+        ? generateMaxAvoid(STATE.eng, STATE.clu, { count, rng })
+        : generate(STATE.eng, STATE.clu, { count, rng, gate: pct === 'off' ? null : gate });
+      r.sets.forEach(c => { c.stat.popPct = gate.pct(c.nums); });
+      STATE.last = r; STATE.lastMode = pct;
       renderResults(r, gate);
     } catch (e) { toast('생성 실패: ' + e.message, true); }
     $('#genBtn').disabled = false; $('#genBtn').textContent = '번호 생성';
@@ -1002,8 +1142,11 @@ function renderResults(r, gate) {
     const card = el('div', 'set');
     const head = el('div', 'setHead');
     head.append(el('span', 'idx', 'SET ' + (i + 1)));
-    if (s.stat.popPct !== undefined)
-      head.append(el('span', 'pill', '인기 하위 ' + s.stat.popPct.toFixed(1) + '%'));
+    if (s.stat.popPct !== undefined) {
+      /* 기준 표본보다 낮은 값은 0.0%로 보이므로 하한을 표기한다 */
+      const pp = s.stat.popPct < 0.1 ? '<0.1' : s.stat.popPct.toFixed(1);
+      head.append(el('span', 'pill', '인기 하위 ' + pp + '%'));
+    }
     head.append(el('span', 'algo', s.algo));
     const balls = el('div', 'balls');
     s.nums.forEach(n => balls.append(el('span', 'ball ' + ballClass(n), n)));
@@ -1060,6 +1203,7 @@ function renderPopChart(r, gate) {
 
 /* ── 예측 기록 (localStorage) ──────────────────────────────────── */
 const LSK = 'lotto_ultimate_log_v1';
+const ENGINE_VERSION = 'v1.3.5';
 const readLog = () => { try { return JSON.parse(localStorage.getItem(LSK) || '[]'); }
                         catch (e) { return []; } };
 const writeLog = (v) => { try { localStorage.setItem(LSK, JSON.stringify(v)); }
@@ -1075,7 +1219,9 @@ function saveLog() {
   for (const s of STATE.last.sets) {
     const key = s.nums.join(',');
     if (log.some(r => r.round === target && r.numbers === key)) continue;
-    log.push({ ts, round: target, numbers: key, matched: null, actual: '' }); added++;
+    /* 설정과 엔진 버전을 함께 남긴다 — 주마다 설정이 다르면 평균을 섞어 비교할 수 없다 */
+    log.push({ ts, round: target, numbers: key, matched: null, actual: '',
+               mode: STATE.lastMode || '', ver: ENGINE_VERSION }); added++;
   }
   writeLog(log); renderLog(); toast(`${added}건 기록 (회차 ${target})`);
 }
@@ -1139,16 +1285,26 @@ function renderLog() {
     box.append(tr);
   });
   const avg = graded.length ? npMean(graded.map(r => r.matched)) : null;
-  $('#logStat').textContent = graded.length
-    ? `채점 ${graded.length}세트 · 평균 일치 ${avg.toFixed(4)}개 (이론 무작위 0.8000)`
-    : `기록 ${log.length}세트 · 채점 대기`;
+  if (graded.length) {
+    const modes = new Set(graded.map(r => r.mode || '?'));
+    const se = 0.7839 / Math.sqrt(graded.length);
+    const z = (avg - 0.8) / se;
+    const verdict = Math.abs(z) < 1.96
+      ? '무작위와 구별 안 됨' : (z > 0 ? '무작위보다 높음' : '무작위보다 낮음');
+    $('#logStat').textContent =
+      `채점 ${graded.length}세트 · 평균 일치 ${avg.toFixed(4)}개 (이론 0.8000) · `
+      + `${verdict}` + (modes.size > 1 ? ` · ⚠ 설정 ${modes.size}종 혼재` : '');
+  } else {
+    $('#logStat').textContent = `기록 ${log.length}세트 · 채점 대기`;
+  }
 }
 
 function exportLog() {
   const log = readLog();
   if (!log.length) return toast('기록이 없습니다', true);
-  const csv = 'timestamp,round,numbers,matched,actual\n' +
-    log.map(r => `${r.ts},${r.round},"${r.numbers}",${r.matched ?? ''},"${r.actual}"`).join('\n');
+  const csv = 'timestamp,round,numbers,matched,actual,mode,engine\n' +
+    log.map(r => `${r.ts},${r.round},"${r.numbers}",${r.matched ?? ''},"${r.actual}",`
+                 + `${r.mode || ''},${r.ver || ''}`).join('\n');
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' }));
   a.download = 'prediction_log.csv'; a.click(); URL.revokeObjectURL(a.href);
