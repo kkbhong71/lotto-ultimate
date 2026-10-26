@@ -35,6 +35,17 @@ h1{font-size:1.5rem;margin:0 0 4px;letter-spacing:-.02em}
 .card[data-step="gen"]{--sc:var(--st-gen)}
 .card[data-step="log"]{--sc:var(--st-log)}
 .card[data-step="ref"]{--sc:var(--st-ref)}
+.card[data-step="warn"]{--sc:var(--b3)}
+/* 대조군 경고 — 구매 대상이 아님을 분명히 */
+.warnbox{background:color-mix(in srgb,var(--b3) 12%,transparent);
+  border:1px solid color-mix(in srgb,var(--b3) 45%,transparent);
+  border-radius:10px;padding:12px 14px;margin-bottom:13px}
+.warnbox strong{color:var(--b3)}
+.warnbox p{margin:6px 0 0;font-size:.79rem;color:var(--dim);line-height:1.6}
+.cmpA{color:var(--st-gen);font-weight:600}
+.cmpB{color:var(--b3);font-weight:600}
+#cmpCard th:nth-child(2),#cmpCard td:nth-child(2){text-align:right}
+#cmpCard th:nth-child(3),#cmpCard td:nth-child(3){text-align:right}
 .card[data-step] h2{display:flex;align-items:center;gap:8px}
 .tag{font-size:.64rem;letter-spacing:.04em;padding:2px 7px;border-radius:999px;
   background:color-mix(in srgb,var(--sc) 20%,transparent);color:var(--sc);
@@ -127,7 +138,7 @@ footer{border-top:1px solid var(--line);margin-top:28px;padding-top:18px}
 <div class="wrap">
 <header>
   <h1>LOTTO ULTIMATE</h1>
-  <p class="sub">인기 조합 회피 엔진 v1.3.5 · Oseong Vibe Coding EduHub</p>
+  <p class="sub">인기 조합 회피 엔진 v1.3.6 · Oseong Vibe Coding EduHub</p>
 </header>
 
 <div class="card" data-step="ref">
@@ -197,6 +208,7 @@ footer{border-top:1px solid var(--line);margin-top:28px;padding-top:18px}
         <option value="10" selected>보통 — 하위 10%</option>
         <option value="5">강함 — 하위 5%</option>
         <option value="off">끔 — 감점만</option>
+        <option value="follow">추종 — 대조군 (기록 전용 · 구매 금지)</option>
       </select></div>
     <button id="genBtn" disabled>번호 생성</button>
   </div>
@@ -204,11 +216,30 @@ footer{border-top:1px solid var(--line);margin-top:28px;padding-top:18px}
 
 <div class="card" data-step="gen" id="resCard" hidden>
   <h2><span class="tag">2 · 추첨 전</span>추천 조합</h2>
+  <div class="warnbox" id="followWarn" hidden>
+    <strong>⚠ 대조군입니다 — 이 번호는 구매하지 마세요</strong>
+    <p>사람들이 가장 많이 고르는 조합입니다. 당첨 확률은 다른 조합과 똑같지만,
+    당첨되면 나눌 사람이 많아 1,000원권 기대값이 461원(수익률 46.1%)으로
+    무작위 자동(501원)보다 낮습니다. <strong>검증용으로 기록만 하세요.</strong>
+    회피 조합과 일치 개수를 비교하면 시스템이 정직하게 작동하는지 확인할 수 있습니다.</p>
+  </div>
   <p id="summary"></p>
   <div id="results"></div>
-  <label for="copyBox" style="margin-top:12px">복사용</label>
+  <label for="copyBox" id="copyLabel" style="margin-top:12px">복사용</label>
   <textarea id="copyBox" rows="5" readonly></textarea>
-  <div style="margin-top:9px"><button class="ghost" id="copyBtn">클립보드 복사</button></div>
+  <div style="margin-top:9px" id="copyWrap"><button class="ghost" id="copyBtn">클립보드 복사</button></div>
+</div>
+
+<div class="card" data-step="ref" id="cmpCard" hidden>
+  <h2><span class="tag">참고</span>회피 vs 추종 — 번호 성향 비교</h2>
+  <p class="note" style="margin:0 0 11px">같은 후보 풀을 인기도 낮은 쪽과 높은 쪽으로
+  각각 300세트 모아 비교한 것입니다. 인기도 모형에 번호를 직접 가르친 적이 없는데도
+  추종 쪽이 저절로 생일 범위로 모입니다.</p>
+  <table><thead><tr><th>항목</th><th>회피 (저인기)</th><th>추종 (고인기)</th></tr></thead>
+    <tbody id="cmpBody"></tbody></table>
+  <p class="note" style="margin:12px 0 0">추종 쪽 합계가 작고 1~31번이 많은 것은
+  사람들이 생일·기념일로 번호를 고르기 때문입니다. 회피 엔진이 하는 일은
+  이 습관의 반대편을 찾는 것뿐입니다.</p>
 </div>
 
 <div class="card" data-step="ref" id="popCard" hidden>
@@ -251,7 +282,7 @@ footer{border-top:1px solid var(--line);margin-top:28px;padding-top:18px}
     <button class="ghost" id="expBtn">CSV 내보내기</button>
   </div>
   <p id="logStat" class="note" style="margin:0 0 10px"></p>
-  <table><thead><tr><th>회차</th><th>번호</th><th>일치</th><th></th></tr></thead>
+  <table><thead><tr><th>회차</th><th>번호</th><th>설정</th><th>일치</th><th></th></tr></thead>
     <tbody id="logBody"></tbody></table>
   <div style="margin-top:10px"><button class="ghost" id="clearBtn">기록 전체 삭제</button></div>
   <p class="note" style="margin-top:10px">예측을 <strong>먼저</strong> 기록하고 추첨 후에 채점합니다.
@@ -955,6 +986,8 @@ function validateDraw(nums, round, history, meta) {
  * ===================================================================== */
 function generateMaxAvoid(eng, clu, opts) {
   opts = opts || {};
+  /* follow=true 면 인기도가 가장 높은 쪽을 고른다 — 대조군용이며 구매 대상이 아니다 */
+  const follow = !!opts.follow;
   const count = opts.count || 5;
   const poolTarget = opts.poolTarget || 3000;
   const rng = opts.rng || makeRng();
@@ -977,9 +1010,9 @@ function generateMaxAvoid(eng, clu, opts) {
     passed++;
     pool.push({ nums, algo: 'avoid', popLog: popularityLog(nums, prev) });
   }
-  pool.sort((a, b) => a.popLog - b.popLog);
+  pool.sort((a, b) => follow ? b.popLog - a.popLog : a.popLog - b.popLog);
 
-  /* 인기도가 낮은 것부터, 세트 간 중복이 MAX_SET_OVERLAP 이하인 것만 채택 */
+  /* 정렬된 순서대로, 세트 간 중복이 MAX_SET_OVERLAP 이하인 것만 채택 */
   const maxOv = CFG.MAX_SET_OVERLAP, sel = [];
   for (const c of pool) {
     if (sel.every(s => c.nums.filter(x => s.nums.includes(x)).length <= maxOv)) {
@@ -996,10 +1029,29 @@ function generateMaxAvoid(eng, clu, opts) {
     for (let a = 0; a < 6; a++) for (let b = a + 1; b < 6; b++) d.add(Math.abs(n[b] - n[a]));
     c.stat = { sum, ac: d.size - 5, odd: n.filter(x => x % 2 === 1).length,
                high: n.filter(x => x >= 23).length, prime: n.filter(x => PRIME.has(x)).length,
-               clusterId: clu.idOf(n), popLog: c.popLog };
+               clusterId: clu.idOf(n), popLog: c.popLog,
+               birth: n.filter(x => x <= 31).length };
     c.score = 1 - (c.popLog - pLo) / pR;
   });
-  return { sets: sel, rej, attempts, passed, relax: [], candidates: pool.length };
+  return { sets: sel, rej, attempts, passed, relax: [], candidates: pool.length,
+           follow: follow, pool: pool };
+}
+
+/* 양 끝(회피/추종)의 번호 성향을 비교하기 위한 요약 */
+function poolProfile(pool, k) {
+  k = k || 300;
+  const take = pool.slice(0, Math.min(k, pool.length));
+  if (!take.length) return null;
+  const cnt = new Map();
+  let sum = 0, birth = 0;
+  for (const c of take) {
+    sum += npSum(c.nums);
+    birth += c.nums.filter(x => x <= 31).length;
+    for (const n of c.nums) cnt.set(n, (cnt.get(n) || 0) + 1);
+  }
+  const top = [...cnt.entries()].sort((a, b) => b[1] - a[1]).slice(0, 8)
+                .map(e => e[0]).sort((a, b) => a - b);
+  return { n: take.length, sum: sum / take.length, birth: birth / take.length, top };
 }
 
 /* ── UI 바인딩 ──────────────────────────────────────────────────── */
@@ -1123,9 +1175,10 @@ function run() {
     try {
       const rng = makeRng();
       /* 분위 표시는 어느 모드에서나 같은 기준선을 쓴다 */
-      const gate = makeGate(STATE.eng.last, rng, 40000, pct === 'max' || pct === 'off' ? 100 : +pct);
-      const r = pct === 'max'
-        ? generateMaxAvoid(STATE.eng, STATE.clu, { count, rng })
+      const gate = makeGate(STATE.eng.last, rng, 40000,
+                            (pct === 'max' || pct === 'off' || pct === 'follow') ? 100 : +pct);
+      const r = (pct === 'max' || pct === 'follow')
+        ? generateMaxAvoid(STATE.eng, STATE.clu, { count, rng, follow: pct === 'follow' })
         : generate(STATE.eng, STATE.clu, { count, rng, gate: pct === 'off' ? null : gate });
       r.sets.forEach(c => { c.stat.popPct = gate.pct(c.nums); });
       STATE.last = r; STATE.lastMode = pct;
@@ -1137,15 +1190,26 @@ function run() {
 
 function renderResults(r, gate) {
   const box = $('#results'); box.innerHTML = '';
+  /* 대조군 모드: 구매 대상이 아님을 분명히 하고 복사 경로를 막는다 */
+  const warn = $('#followWarn');
+  warn.hidden = !r.follow;
+  $('#copyWrap').hidden = !!r.follow;
+  $('#copyBox').hidden = !!r.follow;
+  $('#copyLabel').hidden = !!r.follow;
+  $('#resCard').dataset.step = r.follow ? 'warn' : 'gen';
   if (!r.sets.length) { toast('조건을 만족하는 조합이 없습니다. 차단 비율을 완화해 보세요.', true); return; }
   r.sets.forEach((s, i) => {
     const card = el('div', 'set');
     const head = el('div', 'setHead');
     head.append(el('span', 'idx', 'SET ' + (i + 1)));
     if (s.stat.popPct !== undefined) {
-      /* 기준 표본보다 낮은 값은 0.0%로 보이므로 하한을 표기한다 */
-      const pp = s.stat.popPct < 0.1 ? '<0.1' : s.stat.popPct.toFixed(1);
-      head.append(el('span', 'pill', '인기 하위 ' + pp + '%'));
+      /* 회피는 '하위 n%', 추종은 '상위 n%'로 읽어야 뜻이 통한다 */
+      const v = r.follow ? 100 - s.stat.popPct : s.stat.popPct;
+      const pp = v < 0.1 ? '<0.1' : v.toFixed(1);
+      const pill = el('span', 'pill', (r.follow ? '인기 상위 ' : '인기 하위 ') + pp + '%');
+      if (r.follow) pill.style.cssText =
+        'background:color-mix(in srgb,var(--b3) 18%,transparent);color:var(--b3)';
+      head.append(pill);
     }
     head.append(el('span', 'algo', s.algo));
     const balls = el('div', 'balls');
@@ -1160,9 +1224,10 @@ function renderResults(r, gate) {
   $('#summary').textContent =
     `후보 ${r.candidates}개 · 통과율 ${(r.passed / r.attempts * 100).toFixed(1)}% · ` +
     `커버리지 ${cov}/45 · 평균 인기분위 ${avg}`;
-  $('#copyBox').value = r.sets.map(s => s.nums.join(', ')).join('\n');
+  $('#copyBox').value = r.follow ? '' : r.sets.map(s => s.nums.join(', ')).join('\n');
   $('#resCard').hidden = false;
   renderPopChart(r, gate);
+  renderCompare(r, gate);
 }
 
 function renderPopChart(r, gate) {
@@ -1201,9 +1266,33 @@ function renderPopChart(r, gate) {
   wrap.append(svg); $('#popCard').hidden = false;
 }
 
+/* ── 양 끝 비교 패널 ───────────────────────────────────────────
+   같은 후보 풀을 인기도 오름차순/내림차순으로 각각 상위 300개 모아
+   번호 성향을 대조한다. 회피가 왜 작동하는지 한 화면에서 보인다. */
+function renderCompare(r, gate) {
+  const card = $('#cmpCard');
+  if (!r.pool || r.pool.length < 100) { card.hidden = true; return; }
+  const asc = r.follow ? r.pool.slice().reverse() : r.pool;
+  const lo = poolProfile(asc), hi = poolProfile(asc.slice().reverse());
+  if (!lo || !hi) { card.hidden = true; return; }
+  const rows = [
+    ['평균 합계', Math.round(lo.sum), Math.round(hi.sum)],
+    ['1~31번 개수 (생일 범위)', lo.birth.toFixed(1) + '개', hi.birth.toFixed(1) + '개'],
+    ['자주 쓰이는 번호', lo.top.join(' '), hi.top.join(' ')],
+  ];
+  const tb = $('#cmpBody'); tb.innerHTML = '';
+  for (const [k, a, b] of rows) {
+    const tr = el('tr');
+    tr.append(el('td', null, k));
+    const ta = el('td', 'cmpA', String(a)), tbd = el('td', 'cmpB', String(b));
+    tr.append(ta, tbd); tb.append(tr);
+  }
+  card.hidden = false;
+}
+
 /* ── 예측 기록 (localStorage) ──────────────────────────────────── */
 const LSK = 'lotto_ultimate_log_v1';
-const ENGINE_VERSION = 'v1.3.5';
+const ENGINE_VERSION = 'v1.3.6';
 const readLog = () => { try { return JSON.parse(localStorage.getItem(LSK) || '[]'); }
                         catch (e) { return []; } };
 const writeLog = (v) => { try { localStorage.setItem(LSK, JSON.stringify(v)); }
@@ -1275,7 +1364,8 @@ function renderLog() {
   /* 원본 인덱스를 들고 다녀야 최신순으로 뒤집어 보여줘도 올바른 항목이 지워진다 */
   log.map((r, i) => ({ r, i })).reverse().slice(0, 40).forEach(({ r, i }) => {
     const tr = el('tr');
-    [r.round, r.numbers, r.matched === null ? '—' : r.matched + '개'].forEach(v =>
+    const modeLabel = { max: '회피', follow: '추종', off: '끔' }[r.mode] || (r.mode ? r.mode + '%' : '—');
+    [r.round, r.numbers, modeLabel, r.matched === null ? '—' : r.matched + '개'].forEach(v =>
       tr.append(el('td', null, String(v))));
     const td = el('td');
     const b = el('button', 'del', '✕');
@@ -1291,9 +1381,19 @@ function renderLog() {
     const z = (avg - 0.8) / se;
     const verdict = Math.abs(z) < 1.96
       ? '무작위와 구별 안 됨' : (z > 0 ? '무작위보다 높음' : '무작위보다 낮음');
+    let extra = '';
+    if (modes.size > 1) {
+      /* 모드별로 나눠 보여준다 — 확률은 같으므로 두 값이 비슷해야 정상이다 */
+      const by = {};
+      graded.forEach(r => { const k = r.mode || '?'; (by[k] = by[k] || []).push(r.matched); });
+      extra = ' · ' + Object.entries(by)
+        .map(([k, v]) => `${({ max: '회피', follow: '추종', off: '끔' }[k] || k)} `
+                       + `${(v.reduce((a, b) => a + b, 0) / v.length).toFixed(2)}개(${v.length})`)
+        .join(' / ');
+    }
     $('#logStat').textContent =
       `채점 ${graded.length}세트 · 평균 일치 ${avg.toFixed(4)}개 (이론 0.8000) · `
-      + `${verdict}` + (modes.size > 1 ? ` · ⚠ 설정 ${modes.size}종 혼재` : '');
+      + `${verdict}` + extra;
   } else {
     $('#logStat').textContent = `기록 ${log.length}세트 · 채점 대기`;
   }
