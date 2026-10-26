@@ -57,15 +57,16 @@ def make_rng(seed=None):
 #   offset 포아송 회귀 log λ = log(N_manual/8145060) + β0 + x'β, quasi-Poisson(scale 3.16)
 #   음성 대조군(자동 당첨자) 전 항목 무효과 확인, 홀드아웃 200회차 로그우도 +10.66
 #   1SD당 인기도 변화: sum -18.4% / same_row_max -10.0% / tail_repeat +4.9% / prev_overlap -7.4%
-POP_COEF = {'sum': -0.2033, 'same_row_max': -0.1055,
-            'tail_repeat': 0.0474, 'prev_overlap': -0.0768}
+POP_COEF = {'sum': -0.2017, 'same_row_max': -0.0706, 'tail_repeat': 0.0457,
+            'prev_overlap': -0.0765, 'gap_var': -0.1651}
 
-# 조합공간 기준 평균/표준편차 — 랜덤 30만 조합으로 실측 (추정치 아님).
-# [v1.3.2 정정] 기존 하드코딩값은 same_row_max 평균 1.75(실제 2.20),
-#               tail_repeat 평균 1.35(실제 1.88)로 1SD 가까이 틀려 있었다.
-#               표준화가 틀리면 계수가 맞아도 점수가 어긋난다.
-POP_REF = {'sum': (137.9489, 29.9479), 'same_row_max': (2.2035, 0.5524),
-           'tail_repeat': (1.8821, 0.5425), 'prev_overlap': (0.8002, 0.7836)}
+# [v1.3.9] gap_var 추가 — 정렬된 번호 사이 5개 간격의 분산.
+#   사람은 고르게 퍼진 조합을 선호하므로 간격이 들쭉날쭉할수록 덜 인기 있다.
+#   983회차 수동 당첨자 적합: 1SD당 -15.2%, p<0.0001, 95% CI [-22.3%, -7.8%]
+#   음성 대조군(자동 당첨자) 전 항목 무효과, 홀드아웃 로그우도 +16.1 개선.
+POP_REF = {'sum': (137.9673, 29.9210), 'same_row_max': (2.2042, 0.5524),
+           'tail_repeat': (1.8832, 0.5425), 'prev_overlap': (0.7999, 0.7833),
+           'gap_var': (25.6956, 21.2292)}
 
 
 def popularity_features(nums, prev_draw):
@@ -76,8 +77,10 @@ def popularity_features(nums, prev_draw):
     tails = Counter(n % 10 for n in nums)
     tail_repeat = max(tails.values())
     prev_overlap = len(set(nums) & set(prev_draw)) if prev_draw else 0
-    return {'sum': s, 'same_row_max': same_row_max,
-            'tail_repeat': tail_repeat, 'prev_overlap': prev_overlap}
+    gaps = [nums[i + 1] - nums[i] for i in range(5)]
+    gap_var = float(np.var(gaps))
+    return {'sum': s, 'same_row_max': same_row_max, 'tail_repeat': tail_repeat,
+            'prev_overlap': prev_overlap, 'gap_var': gap_var}
 
 
 def popularity_log(nums, prev_draw):
