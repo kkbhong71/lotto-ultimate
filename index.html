@@ -19,6 +19,8 @@
   }
 }
 *{box-sizing:border-box}
+/* hidden 속성은 어떤 display 규칙보다 우선한다 (label{display:block} 등과의 충돌 방지) */
+[hidden]{display:none !important}
 body{margin:0;background:var(--bg);color:var(--fg);
   font-family:system-ui,-apple-system,"Segoe UI","Noto Sans KR",sans-serif;
   line-height:1.6;-webkit-text-size-adjust:100%}
@@ -145,7 +147,7 @@ footer{border-top:1px solid var(--line);margin-top:28px;padding-top:18px}
 <div class="wrap">
 <header>
   <h1>LOTTO ULTIMATE</h1>
-  <p class="sub">인기 조합 회피 엔진 v1.4.0 · Oseong Vibe Coding EduHub</p>
+  <p class="sub">인기 조합 회피 엔진 v1.4.1 · Oseong Vibe Coding EduHub</p>
 </header>
 
 <div class="card" data-step="ref">
@@ -216,7 +218,7 @@ footer{border-top:1px solid var(--line);margin-top:28px;padding-top:18px}
         <option value="25">약함 — 하위 25% · 기대 51.7%</option>
         <option value="off">끔 — 감점만 · 기대 50.0%</option>
         <option value="predict">예측 — 8종 점수 최대 · 기대 50.0% (무작위와 동일)</option>
-        <option value="follow">추종 — 대조군 · 기대 46.0% ⚠ 기록 전용</option>
+        <option value="follow">추종 — 대조군 · 기대 46.0% ⚠ 가장 불리</option>
       </select></div>
     <button id="genBtn" disabled>번호 생성</button>
   </div>
@@ -225,11 +227,13 @@ footer{border-top:1px solid var(--line);margin-top:28px;padding-top:18px}
 <div class="card" data-step="gen" id="resCard" hidden>
   <h2><span class="tag">2 · 추첨 전</span>추천 조합</h2>
   <div class="warnbox" id="followWarn" hidden>
-    <strong>⚠ 대조군입니다 — 이 번호는 구매하지 마세요</strong>
-    <p>사람들이 가장 많이 고르는 조합입니다. 당첨 확률은 다른 조합과 똑같지만,
-    당첨되면 나눌 사람이 많아 1,000원권 기대값이 460원(수익률 46.0%)으로
-    무작위 자동(500원)보다 낮습니다. <strong>검증용으로 기록만 하세요.</strong>
-    회피 조합과 일치 개수를 비교하면 시스템이 정직하게 작동하는지 확인할 수 있습니다.</p>
+    <strong>⚠ 대조군 — 기대값이 가장 낮은 조합입니다</strong>
+    <p>사람들이 가장 많이 고르는 조합입니다. <strong>당첨 확률은 다른 조합과
+    완전히 같습니다.</strong> 다만 당첨되면 나눌 사람이 많아 1,000원권 기대값이
+    460원(수익률 46.0%)으로, 무작위 자동(500원)이나 회피 모드(568원)보다 낮습니다.
+    회피 대비 장당 108원 손해입니다.</p>
+    <p>비교 실험이 목적이라면 <strong>구매 없이 기록만 해도</strong> 일치 개수는
+    채점됩니다. 그래도 사시겠다면 아래에서 복사하시면 됩니다 — 판단은 선생님 몫입니다.</p>
   </div>
   <div class="warnbox soft" id="predictWarn" hidden>
     <strong>예측 모드 — 무작위와 기대값이 같습니다</strong>
@@ -1253,10 +1257,10 @@ function renderResults(r, gate) {
   const isFollow = r.mode === 'follow', isPredict = r.mode === 'predict';
   $('#followWarn').hidden = !isFollow;
   $('#predictWarn').hidden = !isPredict;
-  /* 추종은 복사 경로를 막고, 예측은 경고만 띄운 뒤 복사는 허용한다 */
-  $('#copyWrap').hidden = isFollow;
-  $('#copyBox').hidden = isFollow;
-  $('#copyLabel').hidden = isFollow;
+  /* 어떤 모드에서도 복사는 허용한다 — 경고는 띄우되 선택은 사용자 몫.
+     다만 복사 라벨에 모드를 적어 무엇을 복사하는지 분명히 한다. */
+  $('#copyLabel').textContent = isFollow ? '복사용 (추종 — 대조군)'
+                              : isPredict ? '복사용 (예측)' : '복사용';
   $('#resCard').dataset.step = isFollow ? 'warn' : (isPredict ? 'soft' : 'gen');
   if (!r.sets.length) { toast('조건을 만족하는 조합이 없습니다. 차단 비율을 완화해 보세요.', true); return; }
   r.sets.forEach((s, i) => {
@@ -1286,7 +1290,7 @@ function renderResults(r, gate) {
     `후보 ${r.candidates}개 · 통과율 ${(r.passed / r.attempts * 100).toFixed(1)}% · ` +
     `커버리지 ${cov}/45 · 평균 인기분위 ${avg}` +
     (r.maxOverlap > CFG.MAX_SET_OVERLAP ? ` · 세트 간 중복 ${r.maxOverlap}개까지 허용` : '');
-  $('#copyBox').value = isFollow ? '' : r.sets.map(s => s.nums.join(', ')).join('\n');
+  $('#copyBox').value = r.sets.map(s => s.nums.join(', ')).join('\n');
   $('#resCard').hidden = false;
   renderPopChart(r, gate);
   renderCompare(r, gate);
@@ -1354,7 +1358,7 @@ function renderCompare(r, gate) {
 
 /* ── 예측 기록 (localStorage) ──────────────────────────────────── */
 const LSK = 'lotto_ultimate_log_v1';
-const ENGINE_VERSION = 'v1.4.0';
+const ENGINE_VERSION = 'v1.4.1';
 const readLog = () => { try { return JSON.parse(localStorage.getItem(LSK) || '[]'); }
                         catch (e) { return []; } };
 const writeLog = (v) => { try { localStorage.setItem(LSK, JSON.stringify(v)); }
